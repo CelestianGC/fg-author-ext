@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<root version="3.0" >
+
+	<properties>
+		<name>CoreRPG - Author</name>
+		<version>0.5</version>
+		<loadorder>99</loadorder>
+		<description>
+			<text>Write story entries and then author them into a Ref-Manual.</text>
+			<website></website>
+			<author>Celestian</author>
+		</description>
+	</properties>
+
+	<announcement text="Author - CoreRPG version 0.5.\rby Celestian" font="emotefont"/>
+
+	<base>		
+        <!-- Author requirements -->
+        <script name="AuthorManagerADND" file="scripts/manager_author_adnd.lua" />
+        <includefile source="utility/utility_author.xml" />
+        
+        <!-- Author strings -->
+        <string name="author_window_title">Author Manual</string>
+        <string name="author_completed">Authored manual '%s'as file: %s.</string>
+        <string name="author_label_directory">Directory</string>
+        <string name="author_button">Author</string>
+    </base>
+    
+</root>

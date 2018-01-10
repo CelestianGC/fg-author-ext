@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+	<windowclass name="author_entry">
+		<sheetdata>
+			<linkcontrol name="open">
+				<bounds>25,0,20,20</bounds>
+				<readonly />
+			</linkcontrol>
+			<stringfield name="name">
+				<bounds>50,0,-60,20</bounds>
+				<font>sheettext</font>
+				<static />
+			</stringfield>
+		</sheetdata>
+	</windowclass>
+
+	<windowclass name="author_categoryentry">
+		<script>
+			exportsource = "";
+			exporttarget = "";
+			exportreftarget = "";
+			exporttype = "";
+			
+			function setSource(n)
+				exportsource = n;
+			end
+			function getSources()
+				local aExportSources = {};
+				if type(exportsource) == "table" then
+					aExportSources = exportsource;
+				elseif exportsource ~= "" then
+					aExportSources = { exportsource };
+				end
+				return aExportSources;
+			end
+			function setTarget(n)
+				exporttarget = n;
+			end
+			function getTargets()
+				local aExportTargets = {};
+				if type(exporttarget) == "table" then
+					aExportTargets = exporttarget;
+				elseif exporttarget ~= "" then
+					aExportTargets = { exporttarget };
+				end
+				return aExportTargets;
+			end
+			function setRefTarget(n)
+				exportreftarget = n;
+			end
+			function getRefTargets()
+				local aExportTargets = {};
+				if type(exportreftarget) == "table" then
+					aExportTargets = exportreftarget;
+				elseif exportreftarget ~= "" then
+					aExportTargets = { exportreftarget };
+				end
+				return aExportTargets;
+			end
+			function setExportType(n)
+				exporttype = n;
+			end
+			function getExportType()
+				return exporttype;
+			end
+
+			function onHover(bOnWindow)
+				if bOnWindow then
+					setFrame("rowshade");
+				else
+					setFrame(nil);
+				end
+			end
+		</script>
+		<sheetdata>
+			<buttonc_checkbox name="all">
+				<bounds>0,0,20,20</bounds>
+				<script>
+					function onInit()
+						onValueChanged();
+					end
+					
+					function onValueChanged()
+						local nValue = getValue();
+						local bState = (nValue == 1);
+						window.entries.setVisible(not bState);
+					end
+				</script>
+			</buttonc_checkbox>
+			<label name="label">
+				<bounds>25,0,-21,20</bounds>
+			</label>
+			
+			<windowlist name="entries">
+				<bounds>0,20,-1,-1</bounds>
+				<class>author_entry</class>
+				<skipempty />
+				<allowdelete />
+				<sortby><control>name</control></sortby>
+			</windowlist>
+		</sheetdata>
+	</windowclass>
+
+	<windowclass name="author">
+		<frame>utilitybox3</frame>
+		<placement>
+			<size width="480" height="610" />
+			<nosave />
+		</placement>
+		<sizelimits>
+			<dynamic />
+		</sizelimits>
+		<script file="utility/scripts/author.lua" />
+		<nodelete />
+		<sheetdata>
+			<windowtitlebar name="title">
+				<resource>author_window_title</resource>
+			</windowtitlebar>
+			<anchor_title_utilitybox3 name="contentanchor" />
+			
+			<!-- <frame_export_file name="genericframe" /> -->
+			
+			<frame_export_meta name="genericframe2" />
+
+<!--			
+			<stringu name="file">
+				<anchored to="genericframe" position="insidetopleft" offset="90,6" height="20">
+					<right offset="-40" />
+				</anchored>
+				<frame name="required" offset="7,6,7,6" />
+				<empty textres="export_empty_file" />
+				<script>
+					function onInit()
+						onValueChanged();
+					end
+					
+					function onValueChanged()
+						if isEmpty() then
+							setFrame("required", 7, 6, 7, 6);
+						else
+							setFrame(nil);
+						end
+					end
+				</script>
+			</stringu>
+			<label>
+				<anchored to="file" position="insidetopleft" offset="-80,0" />
+				<static textres="author_label_directory" />
+			</label>
+
+			<stringu name="thumbnail">
+				<anchored to="file" position="below" offset="0,5" height="20" />
+				<empty textres="export_empty_thumbnail" />
+			</stringu>
+			<label>
+				<anchored to="thumbnail" position="insidetopleft" offset="-80,0" />
+				<static textres="export_label_thumbnail" />
+			</label>
+			<button_text name="thumbnail_chooser">
+				<anchored to="thumbnail" position="righthigh" offset="10,5" width="20" height="10" />
+				<state text="..." />
+				<script>
+					function onButtonPress()
+						local sFile = Interface.dialogFileOpen(false, { png = "PNG Files (*.png)" }, "");
+						if sFile then
+							window.thumbnail.setValue(sFile);
+						end
+					end
+				</script>
+			</button_text>
+-->
+			<stringu name="name">
+				<anchored to="genericframe2" position="insidetopleft" offset="90,6" height="20">
+					<right offset="-10" />
+				</anchored>
+				<frame name="required" offset="7,6,7,6" />
+				<empty textres="export_empty_name" />
+				<script>
+					function onInit()
+						onValueChanged();
+					end
+					
+					function onValueChanged()
+						if isEmpty() then
+							setFrame("required", 7, 6, 7, 6);
+						else
+							setFrame(nil);
+						end
+					end
+				</script>
+			</stringu>
+			<label>
+				<anchored to="name" position="insidetopleft" offset="-80,2" />
+				<static textres="export_label_name" />
+			</label>
+
+			<stringu name="category">
+				<anchored to="name" position="below" offset="0,5" height="20" />
+				<empty textres="export_empty_category" />
+			</stringu>
+			<label>
+				<anchored to="category" position="insidetopleft" offset="-80,2" />
+				<static textres="export_label_category" />
+			</label>
+
+			<stringu name="author">
+				<anchored to="category" position="below" offset="0,5" height="20" />
+				<empty textres="export_empty_author" />
+			</stringu>
+			<label>
+				<anchored to="author" position="insidetopleft" offset="-80,2" />
+				<static textres="export_label_author" />
+			</label>
+
+			<button_checkbox name="readonly">
+				<anchored to="author" position="belowleft" offset="0,5" width="20" height="20" />
+			</button_checkbox>
+			<label>
+				<anchored to="readonly" position="insidetopleft" offset="-80,2" />
+				<static textres="export_label_readonly" />
+			</label>
+
+			<button_checkbox name="playervisible">
+				<anchored width="20" height="20">
+					<top parent="readonly" />
+					<left parent="genericframe2" anchor="center" offset="90" />
+				</anchored>
+			</button_checkbox>
+			<label>
+				<anchored to="playervisible" position="insidetopleft" offset="-90,2" />
+				<static textres="export_label_playervisible" />
+			</label>
+
+			<!-- Node list -->
+			<list_export_records name="list" />
+			<scrollbar_list />
+
+			<stringcontrol>
+				<anchored to="list" position="aboveleft" offset="0,3" width="20" />
+				<font>sheetlabel</font>
+				<lineoffset default="on">-1</lineoffset>
+				<static textres="export_label_listall" />
+				<center />
+			</stringcontrol>
+			<stringcontrol>
+				<anchored to="list" position="aboveleft" offset="25,3" />
+				<font>sheetlabel</font>
+				<lineoffset default="on">-1</lineoffset>
+				<static textres="export_label_listtype" />
+			</stringcontrol>
+
+			<stringcontrol>
+				<anchored to="list" position="below" offset="0,5" />
+				<font>sheettext</font>
+				<static textres="export_label_listbottom" />
+				<center />
+			</stringcontrol>
+			
+			<!-- Controls -->
+			<button_export_clear name="button_clear" />
+			<button_export name="button_export" >
+                <state textres="author_button" />
+            </button_export>
+
+			<resize_utilitybox3 />
+			<close_utilitybox3 />
+		</sheetdata>
+	</windowclass>
+</root>
