@@ -124,7 +124,7 @@
 			</windowtitlebar>
 			<anchor_title_utilitybox3 name="contentanchor" />
 			
-			<!-- <frame_export_file name="genericframe" /> -->
+			<frame_export_file name="genericframe" />
 			
 			<frame_export_meta name="genericframe2" />
 
@@ -236,6 +236,34 @@
 				<anchored to="playervisible" position="insidetopleft" offset="-90,2" />
 				<static textres="export_label_playervisible" />
 			</label>
+
+<!-- -->
+			<label name="label_chapter_clean">
+				<anchored to="genericframe" position="insidetopleft" offset="30,6" height="20" />
+				<static textres="author_strip_chapter" />
+        <tooltip textres="author_strip_chapter_tooltip" />
+			</label>
+			<button_checkbox name="chapter_clean">
+        <anchored to="label_chapter_clean" position="left" offset="10" width="20"/>
+			</button_checkbox>
+
+			<label name="label_subchapter_clean">
+				<anchored to="label_chapter_clean" position="belowleft" offset="0,0" />
+				<static textres="author_strip_subchapter" />
+        <tooltip textres="author_strip_subchapter_tooltip" />
+			</label>
+			<button_checkbox name="subchapter_clean">
+        <anchored to="label_subchapter_clean" position="left" offset="10" width="20"/>
+			</button_checkbox>
+
+			<label name="label_entry_clean">
+				<anchored to="genericframe" position="insidetopright" offset="0,0" />
+				<static textres="author_strip_entry" />
+        <tooltip textres="author_strip_entry_tooltip" />
+			</label>
+			<button_checkbox name="entry_clean">
+        <anchored to="label_entry_clean" position="left" offset="10" width="20"/>
+			</button_checkbox>
 
 			<!-- Node list -->
 			<list_export_records name="list" />

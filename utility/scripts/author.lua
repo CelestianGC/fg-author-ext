@@ -6,17 +6,20 @@
 
 -- pass list of nodes with a "name" record and sort by name
 function sortByName(nodes)
-        local aSorted = {};
-        for _,node in pairs(nodes) do
-            table.insert(aSorted, node);
-        end        
-        table.sort(aSorted, function (a, b) return DB.getValue(a,"name","") < DB.getValue(b,"name","") end);
-        return aSorted;
+  local aSorted = {};
+  for _,node in pairs(nodes) do
+      table.insert(aSorted, node);
+  end        
+  table.sort(aSorted, function (a, b) return DB.getValue(a,"name","") < DB.getValue(b,"name","") end);
+  return aSorted;
 end
 
 -- perform the export to Ref-Manual fields.
 function performExport()
   aProperties = {};
+  aProperties.bStripOrderingChapter = (chapter_clean.getValue() == 1);
+  aProperties.bStripOrderingSubChapter = (subchapter_clean.getValue() == 1);
+  aProperties.bStripOrderingEntry = (entry_clean.getValue() == 1);
 	aProperties.name = name.getValue();
 	aProperties.namecompact = string.lower(string.gsub(aProperties.name, "%W", ""));
 	aProperties.category = category.getValue();
@@ -35,19 +38,19 @@ function performExport()
     local dStoryCategories = DB.createChild(dStories,"category");
 
     for _,node in pairs(dStoryRaw) do
-        local sCategory = UtilityManager.getNodeCategory(node);
-        -- only apply if the record is in a category
-        if (sCategory ~= "") then
-            -- strip out all periods because we use category name as a child/node name --DO SOMETHING ELSE
-            sCategory = sCategory:gsub("%.",""); 
-            local dCategory = DB.getChild(dStoryCategories,sCategory);
-            if (dCategory == nil) then
-                dCategory = DB.createChild(dStoryCategories,sCategory);
-                DB.setValue(dCategory,"name","string",sCategory);
-            end
-            local nodeEntry = dCategory.createChild();
-            DB.copyNode(node,nodeEntry);
-        end
+      local sCategory = UtilityManager.getNodeCategory(node);
+      -- only apply if the record is in a category
+      if (sCategory ~= "") then
+          -- strip out all periods because we use category name as a child/node name --DO SOMETHING ELSE
+          sCategory = sCategory:gsub("%.",""); 
+          local dCategory = DB.getChild(dStoryCategories,sCategory);
+          if (dCategory == nil) then
+              dCategory = DB.createChild(dStoryCategories,sCategory);
+              DB.setValue(dCategory,"name","string",sCategory);
+          end
+          local nodeEntry = dCategory.createChild();
+          DB.copyNode(node,nodeEntry);
+      end
     end
 
     -- create root "author" node to drop entries into temporarily 
@@ -105,7 +108,11 @@ function performExport()
       -- create chapter for this category
       local sChapterName = DB.getValue(nodeCategory,"name","EMPTY-CATEGORY-NAME");
       local nodeChapter = DB.createChild(nodeChapters);
-      DB.setValue(nodeChapter,"name","string",stripLeadingNumbers(sChapterName));
+      local sCleanChapterName = sChapterName;
+      if (aProperties.bStripOrderingChapter) then
+        sCleanChapterName = stripLeadingNumbers(sChapterName)
+      end
+      DB.setValue(nodeChapter,"name","string",sCleanChapterName);
       -- create subchapter for this category (have to have sub in every chapter)
       local nodeSubChapters = DB.createChild(nodeChapter,"subchapters");
       -- store this outside of the nodeStory function so we only have aExportSources
@@ -124,19 +131,31 @@ function performExport()
                 sNodeName = StringManager.trim(sNodeName:gsub("<sub>", "")); 
                 -- create new subchapter
                 nodeSubChapterSub = DB.createChild(nodeSubChapters);
-                DB.setValue(nodeSubChapterSub,"name","string",stripLeadingNumbers(sNodeName));
+                local sCleanSubChapterName = sNodeName;
+                if (aProperties.bStripOrderingSubChapter) then
+                  sCleanSubChapterName = stripLeadingNumbers(sNodeName)
+                end
+                DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
                 nodeSubChapter = nodeSubChapterSub;
               end
               -- this jiggery pokery is so we can have a name on the sub
               -- if it just came from having a chapter
               if nodeSubChapterSub == nil then
+                local sCleanSubChapterName = sNodeName;
+                if (aProperties.bStripOrderingSubChapter) then
+                  sCleanSubChapterName = stripLeadingNumbers(sNodeName)
+                end
                 nodeSubChapter = DB.createChild(nodeSubChapters);
                 nodeSubChapterSub = nodeSubChapter;
-                DB.setValue(nodeSubChapterSub,"name","string",stripLeadingNumbers(sNodeName));
+                DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
               end
               -- create refpages node and current node to work on and set name/links
               local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
-              sNodeName = stripLeadingNumbers(sNodeName);
+              local sCleanEntry = sNodeName;
+              if (aProperties.bStripOrderingEntry) then
+                sCleanEntry = stripLeadingNumbers(sNodeName)
+              end
+              sNodeName = sCleanEntry;
               local nodeRefPage = DB.createChild(dRefPages);
               DB.setValue(nodeRefPage,"name","string",sNodeName);
               DB.setValue(nodeRefPage,"keywords","string",sNodeName);
@@ -151,32 +170,32 @@ function performExport()
       end
     end
 
-    -- create root "author" definition node to export
-    local dDefinitionNode = DB.createChild("_authorDefinition");
-    DB.setValue(dDefinitionNode,"name","string",aProperties.name);    
-    DB.setValue(dDefinitionNode,"category","string",aProperties.category);    
-    DB.setValue(dDefinitionNode,"author","string",aProperties.author);    
-    DB.setValue(dDefinitionNode,"ruleset","string",User.getRulesetName());    
+  -- create root "author" definition node to export
+  local dDefinitionNode = DB.createChild("_authorDefinition");
+  DB.setValue(dDefinitionNode,"name","string",aProperties.name);    
+  DB.setValue(dDefinitionNode,"category","string",aProperties.category);    
+  DB.setValue(dDefinitionNode,"author","string",aProperties.author);    
+  DB.setValue(dDefinitionNode,"ruleset","string",User.getRulesetName());    
+  
+  -- prompt for filename to save client.xml to
+  local sFile = Interface.dialogFileSave( );
+  if (sFile ~= nil and sFile ~= "" ) then 
+    local sDirectory = sFile:match("(.*[/\\])");
+    -- export the client.xml data to selected file
+    DB.export(sFile,dAuthorNode.getPath());	
+    -- export definition file in same path/definition
+    DB.export(sDirectory .. "definition.xml",dDefinitionNode.getPath());	
     
-    -- prompt for filename to save client.xml to
-    local sFile = Interface.dialogFileSave( );
-    if (sFile ~= nil) then 
-        local sDirectory = sFile:match("(.*[/\\])");
-        -- export the client.xml data to selected file
-        DB.export(sFile,dAuthorNode.getPath());	
-        -- export definition file in same path/definition
-        DB.export(sDirectory .. "definition.xml",dDefinitionNode.getPath());	
-        
-        -- show done message
-        local sFormat = Interface.getString("author_completed");
-        local sMsg = string.format(sFormat, aProperties.name,sFile);
-        ChatManager.SystemMessage(sMsg);
-        --file.setFocus(true);
-    end
-    -- remove temporary category sorting nodes
-    DB.deleteNode(dRoot);
-    DB.deleteNode(dAuthorNode);    
-    DB.deleteNode(dDefinitionNode);    
+    -- show done message
+    local sFormat = Interface.getString("author_completed");
+    local sMsg = string.format(sFormat, aProperties.name,sFile);
+    ChatManager.SystemMessage(sMsg);
+    --file.setFocus(true);
+  end
+  -- remove temporary category sorting nodes
+  DB.deleteNode(dRoot.getPath());
+  DB.deleteNode(dAuthorNode.getPath());    
+  DB.deleteNode(dDefinitionNode.getPath());    
 end
 
 -- remove leading \d+ and punctuation on text and return it
