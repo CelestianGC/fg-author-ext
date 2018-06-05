@@ -50,6 +50,10 @@ function performExport()
       end
       local nodeEntry = dCategory.createChild();
       DB.copyNode(node,nodeEntry);
+      local sNodeID = node.getPath():match("(id%-%d+)$");
+      if (sNodeID) then
+        DB.setValue(nodeEntry,"_sourceNode","string",sNodeID);
+      end
     end
   end
 
@@ -123,6 +127,8 @@ function performExport()
     local nodeSubChapter = nil;
     for _,nodeStory in pairs(sortByName(nodeCategory.getChildren())) do
         local sNodeName = DB.getValue(nodeStory,"name","");
+        local sNodeID = DB.getValue(nodeStory,"_sourceNode","");
+Debug.console("author.lua","performExport","sNodeID",sNodeID);         
         if (sNodeName ~= "") then
 --Debug.console("author.lua","performExport","sNodeName",sNodeName); 
           -- store current subchapter node in "local" var
@@ -164,11 +170,15 @@ function performExport()
           DB.setValue(nodeRefPage,"keywords","string",sNodeName);
           local sLinkClass = "reference_manualtextwide";
           local sLinkRecord = "..";
+          if (sNodeID and sNodeID ~= "" ) then
+            sLinkRecord = "encounter." .. sNodeID;
+          else
+            -- create block node and set text from story
+            local dBlocks = DB.createChild(nodeRefPage,"blocks");
+            local nodeBlock = DB.createChild(dBlocks);
+            DB.setValue(nodeBlock,"text","formattedtext",DB.getValue(nodeStory,"text","EMPTY-STORY-TEXT"));
+          end
           DB.setValue(nodeRefPage,"listlink","windowreference",sLinkClass,sLinkRecord);
-          -- create block node and set text from story
-          local dBlocks = DB.createChild(nodeRefPage,"blocks");
-          local nodeBlock = DB.createChild(dBlocks);
-          DB.setValue(nodeBlock,"text","formattedtext",DB.getValue(nodeStory,"text","EMPTY-STORY-TEXT"));
       end
     end
   end
