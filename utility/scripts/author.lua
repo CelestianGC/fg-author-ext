@@ -116,9 +116,9 @@ function performExport()
     local sChapterName = DB.getValue(nodeCategory,"name","EMPTY-CATEGORY-NAME");
     local nodeChapter = DB.createChild(nodeChapters);
     local sCleanChapterName = sChapterName;
-    if (aProperties.bStripOrderingChapter) then
+    --if (aProperties.bStripOrderingChapter) then
       sCleanChapterName = stripLeadingNumbers(sChapterName)
-    end
+    --end
     DB.setValue(nodeChapter,"name","string",sCleanChapterName);
     -- create subchapter for this category (have to have sub in every chapter)
     local nodeSubChapters = DB.createChild(nodeChapter,"subchapters");
@@ -128,7 +128,7 @@ function performExport()
     for _,nodeStory in pairs(sortByName(nodeCategory.getChildren())) do
         local sNodeName = DB.getValue(nodeStory,"name","");
         local sNodeID = DB.getValue(nodeStory,"_sourceNode","");
-Debug.console("author.lua","performExport","sNodeID",sNodeID);         
+--Debug.console("author.lua","performExport","sNodeID",sNodeID);         
         if (sNodeName ~= "") then
 --Debug.console("author.lua","performExport","sNodeName",sNodeName); 
           -- store current subchapter node in "local" var
@@ -141,9 +141,9 @@ Debug.console("author.lua","performExport","sNodeID",sNodeID);
             -- create new subchapter
             nodeSubChapterSub = DB.createChild(nodeSubChapters);
             local sCleanSubChapterName = sNodeName;
-            if (aProperties.bStripOrderingSubChapter) then
+            --if (aProperties.bStripOrderingSubChapter) then
               sCleanSubChapterName = stripLeadingNumbers(sNodeName)
-            end
+            --end
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
             nodeSubChapter = nodeSubChapterSub;
           end
@@ -151,9 +151,9 @@ Debug.console("author.lua","performExport","sNodeID",sNodeID);
           -- if it just came from having a chapter
           if nodeSubChapterSub == nil then
             local sCleanSubChapterName = sNodeName;
-            if (aProperties.bStripOrderingSubChapter) then
+            --if (aProperties.bStripOrderingSubChapter) then
               sCleanSubChapterName = stripLeadingNumbers(sNodeName)
-            end
+            --end
             nodeSubChapter = DB.createChild(nodeSubChapters);
             nodeSubChapterSub = nodeSubChapter;
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
@@ -161,23 +161,23 @@ Debug.console("author.lua","performExport","sNodeID",sNodeID);
           -- create refpages node and current node to work on and set name/links
           local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
           local sCleanEntry = sNodeName;
-          if (aProperties.bStripOrderingEntry) then
+          --if (aProperties.bStripOrderingEntry) then
             sCleanEntry = stripLeadingNumbers(sNodeName)
-          end
+          --end
           sNodeName = sCleanEntry;
           local nodeRefPage = DB.createChild(dRefPages);
           DB.setValue(nodeRefPage,"name","string",sNodeName);
           DB.setValue(nodeRefPage,"keywords","string",sNodeName);
           local sLinkClass = "reference_manualtextwide";
           local sLinkRecord = "..";
-          if (sNodeID and sNodeID ~= "" ) then
-            sLinkRecord = "encounter." .. sNodeID;
-          else
+          -- if (sNodeID and sNodeID ~= "" ) then
+            -- sLinkRecord = "encounter." .. sNodeID;
+          -- else
             -- create block node and set text from story
             local dBlocks = DB.createChild(nodeRefPage,"blocks");
             local nodeBlock = DB.createChild(dBlocks);
             DB.setValue(nodeBlock,"text","formattedtext",DB.getValue(nodeStory,"text","EMPTY-STORY-TEXT"));
-          end
+          --end
           DB.setValue(nodeRefPage,"listlink","windowreference",sLinkClass,sLinkRecord);
       end
     end
@@ -191,23 +191,24 @@ Debug.console("author.lua","performExport","sNodeID",sNodeID);
   DB.setValue(dDefinitionNode,"ruleset","string",User.getRulesetName());    
   
   -- prompt for filename to save client.xml to
-  local sFile = Interface.dialogFileSave( );
-  if (sFile ~= nil and sFile ~= "" ) then 
-    local sDirectory = sFile:match("(.*[/\\])");
-    -- export the client.xml data to selected file
-    DB.export(sFile,dAuthorNode.getPath());	
-    -- export definition file in same path/definition
-    DB.export(sDirectory .. "definition.xml",dDefinitionNode.getPath());	
+  -- local sFile = Interface.dialogFileSave( );
+  -- if (sFile ~= nil and sFile ~= "" ) then 
+    -- local sDirectory = sFile:match("(.*[/\\])");
+    -- -- export the client.xml data to selected file
+    -- DB.export(sFile,dAuthorNode.getPath());	
+    -- -- export definition file in same path/definition
+    -- DB.export(sDirectory .. "definition.xml",dDefinitionNode.getPath());	
     
-    -- show done message
-    local sFormat = Interface.getString("author_completed");
-    local sMsg = string.format(sFormat, aProperties.name,sFile);
-    ChatManager.SystemMessage(sMsg);
-    --file.setFocus(true);
-  end
+    -- -- show done message
+    -- local sFormat = Interface.getString("author_completed");
+    -- local sMsg = string.format(sFormat, aProperties.name,sFile);
+    -- ChatManager.SystemMessage(sMsg);
+    -- --file.setFocus(true);
+  -- end
+  
   -- remove temporary category sorting nodes
   DB.deleteNode(dRoot.getPath());
-  DB.deleteNode(dAuthorNode.getPath());    
+  --DB.deleteNode(dAuthorNode.getPath());    
   DB.deleteNode(dDefinitionNode.getPath());    
 end
 
@@ -218,4 +219,8 @@ function stripLeadingNumbers(sText)
       sText = sTextTrimmed;
     end
     return sText;
+end
+
+function registerAuthorNode(rAuthor)
+	table.insert(aAuthor, rAuthor)
 end

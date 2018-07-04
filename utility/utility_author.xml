@@ -300,4 +300,9 @@
 			<close_utilitybox3 />
 		</sheetdata>
 	</windowclass>
+  
+  <!-- use my export.lua file -->
+  <windowclass name="export" merge="join">
+    <script file="utility/scripts/export_author.lua" merge="replace"/>
+  </windowclass>
 </root>
