@@ -41,8 +41,6 @@ function performRefIndexBuild()
   local sTmpRefIndexName = '_refmanualindex';
   
   DB.deleteNode(sTmpRefIndexName); -- delete any previous _refmanualindex node work
-  DB.deleteNode('_authorRefmanual_tmp');
-
 
   -- pickup all stories
   -- there is probably a better way to do this, table of rRecords?
