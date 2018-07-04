@@ -42,7 +42,10 @@ function performRefIndexBuild()
   
   DB.deleteNode(sTmpRefIndexName); -- delete any previous _refmanualindex node work
   DB.deleteNode('_authorRefmanual_tmp');
+
+
   -- pickup all stories
+  -- there is probably a better way to do this, table of rRecords?
   local dStoryRaw = DB.getChildren("encounter");
   local dRoot = DB.createChild("_authorRefmanual_tmp");
   local dStories = DB.createChild(dRoot,"stories");
@@ -69,9 +72,6 @@ function performRefIndexBuild()
   end
 
   -- reference section
-  -- local dAuthorNode = DB.createChild("_authorRefmanual");
-  -- local dReference = DB.createChild(dAuthorNode,"reference");
-  -- local nodeRefIndex = DB.createChild(dReference,"refmanualindex");
   local nodeRefIndex = DB.createNode(sTmpRefIndexName);
   local nodeChapters = DB.createChild(nodeRefIndex,"chapters");
   -- flip through all categories, create sub per category and and entries within category
