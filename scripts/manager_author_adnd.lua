@@ -1,6 +1,4 @@
 --
--- Contains code to manage "/author" command and "export" story entries (<encounters>) as chapter in a ref-manual
--- format. Each "category" in the <encounters> list is a chapter and the chapter contains those story entries.
 --
 --
 function onInit()
@@ -13,7 +11,7 @@ function onInit()
   end
 end
 
--- run a custom process function at the begining of an export
+-- run a custom process function(s) at the begining of an export
 local aCustomExportProcess = {};
 function setCustomExportProcess(fProcess)
 	table.insert(aCustomExportProcess, fProcess);
