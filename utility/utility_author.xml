@@ -6,27 +6,52 @@
 -->
 
 <root>
+  <!-- add database to save entry settings? -->
+	<!-- <template name="list_export_records">
+		<windowlist>
+			<anchored to="contentanchor">
+				<top anchor="bottom" relation="relative" offset="40" />
+				<left offset="5" />
+				<right offset="-15" />
+				<bottom parent="" offset="-190" />
+			</anchored>
+			<frame name="groupbox" offset="15,30,25,30" />
+      <datasource>export.categories</datasource>
+			<class>export_categoryentry</class>
+			<sortby><control>label</control></sortby>
+			<skipempty />
+			<script file="utility/scripts/export_list.lua" />
+		</windowlist>
+	</template> -->
+  
   <!-- use my export.lua file -->
   <windowclass name="export" merge="join">
     <script file="utility/scripts/export_author.lua" merge="replace"/>
     <sheetdata>
+      <hn name="toggle_previous" insertbefore="tokens" >
+        <default>1</default>
+      </hn>
       <!-- this lets them click on A and toggle select for all entries.-->
-      
-      <!-- it would be better if they named the stringu so I could just replace it but...-->
+      <!-- it would be better if they named the stringu so I could just replace it but...
+          instead we just align it on top of the existing as best we can -->
       <label insertbefore="tokens">
         <anchored to="list" position="aboveleft" offset="6,0" width="20" />
         <static text="A" />
         <tooltip text="Press to toggle select for ALL entries." />
         <script>
           function onClickDown()
+            local nPrevious = window.toggle_previous.getValue();
             for _,w in ipairs(window.list.getWindows()) do
-              local nValue = w.all.getValue();
-              local bState = (nValue == 1);
-              if (not bState) then
+              if (nPrevious == 0) then
                 w.all.setValue(1);
               else
                 w.all.setValue(0);
               end
+            end
+            if (nPrevious == 0) then
+              window.toggle_previous.setValue(1);
+            else
+              window.toggle_previous.setValue(0);
             end
           end
         </script>

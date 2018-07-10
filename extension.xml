@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>2.7</version>
+		<version>2.71</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 2.7.\rby Celestian" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 2.71.\rby Celestian" font="emotefont"/>
 
 	<base>		
     <!-- Author requirements -->
