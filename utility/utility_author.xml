@@ -9,5 +9,29 @@
   <!-- use my export.lua file -->
   <windowclass name="export" merge="join">
     <script file="utility/scripts/export_author.lua" merge="replace"/>
+    <sheetdata>
+      <!-- this lets them click on A and toggle select for all entries.-->
+      
+      <!-- it would be better if they named the stringu so I could just replace it but...-->
+      <label insertbefore="tokens">
+        <anchored to="list" position="aboveleft" offset="6,0" width="20" />
+        <static text="A" />
+        <tooltip text="Press to toggle select for ALL entries." />
+        <script>
+          function onClickDown()
+            for _,w in ipairs(window.list.getWindows()) do
+              local nValue = w.all.getValue();
+              local bState = (nValue == 1);
+              if (not bState) then
+                w.all.setValue(1);
+              else
+                w.all.setValue(0);
+              end
+            end
+          end
+        </script>
+      </label>
+    </sheetdata>
   </windowclass>
+
 </root>

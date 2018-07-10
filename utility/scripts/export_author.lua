@@ -130,7 +130,12 @@ function performExport()
                   sLibraryEntry = rExport.sLibraryEntry;
                 end
                 --- that allows you to create a library class of reference_manual
-                
+-- Debug.console("export_author.lua","performExport","nodeChild",nodeChild);                
+-- Debug.console("export_author.lua","performExport","sTargetPath",sTargetPath);                
+-- Debug.console("export_author.lua","performExport","cw.getExportType()",cw.getExportType());                
+-- Debug.console("export_author.lua","performExport","cw.label.getValue()",cw.label.getValue());                
+-- Debug.console("export_author.lua","performExport","sLibraryEntry",sLibraryEntry);                
+-- Debug.console("export_author.lua","performExport","aExportTargets[1]",aExportTargets[1]);                
 								addExportNode(nodeChild, sTargetPath, cw.getExportType(), cw.label.getValue(), sLibraryEntry, aExportTargets[1]);
 							end
 						end

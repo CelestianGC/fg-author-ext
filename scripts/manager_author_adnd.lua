@@ -3,15 +3,36 @@
 --
 function onInit()
 	if User.isHost() then
-		Comm.registerSlashHandler("author", authorRefmanual);
-    ExportManager.registerExportNode({ name = "_refmanualindex", label = "Reference Manual", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
-    
-    -- setup custom export process for the _refmanualindex node build
-    setCustomExportProcess(performRefIndexBuild);
+    local _, _, aMajor, _ = DB.getRulesetVersion();
+    local sRuleset = 'CoreRPG';
+    local nVersion = 4;
+    local bVersionOK = false;
+    local nCurrentVersion = 0;
+    for a1,a2 in pairs(aMajor) do
+      if (a1 == sRuleset and a2 == nVersion) then
+        bVersionOK = true;
+        nCurrentVersion = a2;
+        break;
+      elseif (a1 == sRuleset) then
+        nCurrentVersion = a2;
+      end
+    end
+    if bVersionOK then
+      Comm.registerSlashHandler("author", authorRefmanual);
+      ExportManager.registerExportNode({ name = "_refmanualindex", label = "Reference Manual", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
+      
+      -- setup custom export process for the _refmanualindex node build
+      setCustomExportProcess(performRefIndexBuild);
+    else
+      Debug.chat("AUTHOR: This version requires " .. sRuleset .. " v" .. nVersion .. ". You are running v" .. nCurrentVersion .. ". AUTHOR NOT LOADED.");
+      local CoreRPG_Version_Miss_Match_For_AUTHOR = nil
+      -- this will cause red-alert on console, we do this to get their attention?
+      -- CoreRPG_Version_Miss_Match_For_AUTHOR.causeAlert = nVersion;
+    end
   end
 end
 
--- run a custom process function(s) at the begining of an export
+-- run custom process function(s) at the begining of an export
 local aCustomExportProcess = {};
 function setCustomExportProcess(fProcess)
 	table.insert(aCustomExportProcess, fProcess);
@@ -154,7 +175,7 @@ end
 
 -- remove leading \d+ and punctuation on text and return it
 function stripLeadingNumbers(sText)
-    local sStripped, sTextTrimmed = sText:match("^([%d%p?%s?]+)(.*)");
+    local sStripped, sTextTrimmed = sText:match("^([%d%p]+)(.*)");
     if sStripped ~= nil and sStripped ~= "" then
       sText = sTextTrimmed;
     end
