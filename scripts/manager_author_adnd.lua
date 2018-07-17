@@ -121,7 +121,7 @@ function performRefIndexBuild()
           -- so we can replace with new one if we get <sub>
           local nodeSubChapterSub =  nodeSubChapter;
           -- <sub> found in name string, create new sub-chapter
-          if (sNodeName:match("<sub>") ~= nil) then
+          if (DB.getValue(nodeStory,"subchapter",0) == 1) or (sNodeName:match("<sub>") ~= nil) then
             -- strip out <sub> tag
             sNodeName = StringManager.trim(sNodeName:gsub("<sub>", "")); 
             -- create new subchapter

@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>2.71</version>
+		<version>2.75</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,12 +13,14 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 2.71.\rby Celestian" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 2.75.\rby Celestian" font="emotefont"/>
 
 	<base>		
     <!-- Author requirements -->
     <script name="AuthorManagerADND" file="scripts/manager_author_adnd.lua" />
     <includefile source="utility/utility_author.xml" />
+    <includefile source="campaign/record_story_author.xml" />
+    <string name="story_label_subchapter_toggle">When exporting, set this Story as a sub-chapter in the reference manual.</string>
   </base>
     
 </root>
