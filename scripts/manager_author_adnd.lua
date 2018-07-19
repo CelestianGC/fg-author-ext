@@ -229,11 +229,27 @@ function createBlockImage(dBlocks,sText)
     DB.setValue(nodeBlock,"blocktype","string","image");
     -- <align type="string">center</align>
     DB.setValue(nodeBlock,"align","string","center");
-    -- local nX,nY = .getImageSize();
+    local nX,nY = 400,400; 
+    local nXOriginal, nYOriginal = 0,0;
+    local w = Interface.openWindow("imagewindow",nodeImage);
+    if w then 
+      local ctrl = w.createControl("image_refblock", "image");
+      --nX,nY = getWindowSizeAtSmallImageSize(w,ctrl);
+      nXOriginal, nYOriginal = ctrl.getImageSize();
+      nX, nY = getAdjustedImageSize(win,ctrl);
+      w.close();
+    end
     -- <size type="string">nX,nY</size>
-    DB.setValue(nodeBlock,"size","string","500,500");
+    local sSize = nX .. "," .. nY;
+--Debug.console("manager_author_adnd.lua","createBlockImage","sSize",sSize);    
+    DB.setValue(nodeBlock,"size","string",sSize);
     -- <caption type="string" />
-    DB.setValue(nodeBlock,"caption","string",DB.getValue(nodeImage,"name",""));
+    local sCaption = DB.getValue(nodeImage,"name","");
+    -- if the size changed, tag it with full size image pixels
+    if (nXOriginal ~= nX or nYOriginal ~= nY) then
+      sCaption = sCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
+    end
+    DB.setValue(nodeBlock,"caption","string",sCaption);
     -- <image type="image">
       -- <bitmap>Cavern1 room 2.jpg</bitmap>
     -- </image>
@@ -244,6 +260,20 @@ function createBlockImage(dBlocks,sText)
     -- </imagelink>
     DB.setValue(nodeBlock,"imagelink","windowreference","imagewindow",sImageNode);
   end
+end
+
+-- this will make sure the image is no bigger than 500x500 and try to keep
+-- the scale/size portions correct
+function getAdjustedImageSize(win,image)
+  local SMALL_WIDTH = 500;
+  local SMALL_HEIGHT = 500;
+  local nX,nY = image.getImageSize();
+  if (nX > SMALL_WIDTH or nY > SMALL_HEIGHT) then
+    local nNewScale = math.min(SMALL_WIDTH/nX,SMALL_HEIGHT/nY);
+    nX = math.floor(nX * nNewScale);
+    nY = math.floor(nY * nNewScale);
+  end
+  return nX,nY;
 end
 
 -- remove leading \d+ and punctuation on text and return it
