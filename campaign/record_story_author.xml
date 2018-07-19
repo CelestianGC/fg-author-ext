@@ -15,6 +15,17 @@
       <tooltip textres="story_label_subchapter_toggle" />
     </button_checkbox>
   </template>
+	<template name="masterindexitem_name">
+		<stringfield>
+			<anchored position="insidetopleft" offset="30,2" height="20">
+				<right parent="rightanchor" anchor="left" relation="relative" offset="-5" />
+			</anchored>
+			<font>reference-r</font>
+			<nodrag />
+			<static />
+			<script file="campaign/scripts/masterindexitem_name_author.lua" />
+		</stringfield>
+	</template>
   
   <windowclass name="encounter_header" merge="merge">
 		<sheetdata>

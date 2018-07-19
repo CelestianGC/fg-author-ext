@@ -195,10 +195,10 @@ function createBlocks(nodeRefPage,nodeStory)
 
       -- now trim out the above text from sNoteText
       sNoteText = string.sub(sNoteText,nEnd+1);
-Debug.console("manager_author_adnd.lua","createBlocks","sNoteText",sNoteText);                        
+--Debug.console("manager_author_adnd.lua","createBlocks","sNoteText",sNoteText);                        
     else
       bLoop = false;
-Debug.console("manager_author_adnd.lua","createBlocks","bLoop",bLoop);
+--Debug.console("manager_author_adnd.lua","createBlocks","bLoop",bLoop);
       createBlockText(dBlocks,sNoteText);
     end
   end -- end while
@@ -207,7 +207,7 @@ end
 
 -- add non-image block, text
 function createBlockText(dBlocks,sText)
-Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
+--Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
   -- <blocktype type="string">singletext</blocktype>
   DB.setValue(nodeBlock,"blocktype","string","singletext");
@@ -217,7 +217,7 @@ Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
 end
 -- create a block for an inline image
 function createBlockImage(dBlocks,sText)
-Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
+--Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
 -- <linklist>
   -- <link class="imagewindow" recordname="image.id-00001">Cavern1 room 2</link>
