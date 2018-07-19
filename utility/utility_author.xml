@@ -39,8 +39,11 @@
         <static text="A" />
         <tooltip text="Press to toggle select for ALL entries." />
         <script>
+          function onInit()
+            window.toggle_previous.setValue(0)
+          end
           function onClickDown()
-            local nPrevious = window.toggle_previous.getValue();
+            local nPrevious = window.toggle_previous.getValue() or 0;
             for _,w in ipairs(window.list.getWindows()) do
               if (nPrevious == 0) then
                 w.all.setValue(1);

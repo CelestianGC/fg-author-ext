@@ -160,9 +160,10 @@ function performRefIndexBuild()
             -- sLinkRecord = "encounter." .. sNodeID;
           -- else
             -- create block node and set text from story
-            local dBlocks = DB.createChild(nodeRefPage,"blocks");
-            local nodeBlock = DB.createChild(dBlocks);
-            DB.setValue(nodeBlock,"text","formattedtext",DB.getValue(nodeStory,"text","EMPTY-STORY-TEXT"));
+            createBlocks(nodeRefPage,nodeStory);
+            -- local dBlocks = DB.createChild(nodeRefPage,"blocks");
+            -- local nodeBlock = DB.createChild(dBlocks);
+            -- DB.setValue(nodeBlock,"text","formattedtext",DB.getValue(nodeStory,"text","EMPTY-STORY-TEXT"));
           --end
           DB.setValue(nodeRefPage,"listlink","windowreference",sLinkClass,sLinkRecord);
         end -- sNodeName
@@ -171,6 +172,78 @@ function performRefIndexBuild()
   end -- for
 
   ChatManager.SystemMessage("AUTHOR: created " .. sTmpRefIndexName .. " entries for export.");
+end
+
+function createBlocks(nodeRefPage,nodeStory)
+  local dBlocks = DB.createChild(nodeRefPage,"blocks");
+  local sNoteText = DB.getValue(nodeStory,"text","");
+  --local aTextBlocks = StringManager.split(sNoteText, '<linklist>[%W]+<link class="imagewindow" recordname="[%w%W]+">[%w%W]+</link>[%W]+</linklist>', true);
+  local aTextBlocks = {};
+  local bLoop = true;
+  while (bLoop) do
+    local nStart, nEnd = string.find(sNoteText,'<linklist>[^<]+<link class="imagewindow" recordname="[%w%-%p]+">[^<]+</link>[^<]+</linklist>',1);
+-- Debug.console("manager_author_adnd.lua","createBlocks","nStart",nStart);      
+-- Debug.console("manager_author_adnd.lua","createBlocks","nEnd",nEnd);
+    if (nStart and nEnd) then
+      local sThisBlock = string.sub(sNoteText,1,nStart-1);
+--Debug.console("manager_author_adnd.lua","createBlocks","sThisBlock",sThisBlock);
+      createBlockText(dBlocks,sThisBlock);
+      
+      local sImageBlock = string.sub(sNoteText,nStart,nEnd);
+--Debug.console("manager_author_adnd.lua","createBlocks","sImageBlock",sImageBlock);
+      createBlockImage(dBlocks,sImageBlock);
+
+      -- now trim out the above text from sNoteText
+      sNoteText = string.sub(sNoteText,nEnd+1);
+Debug.console("manager_author_adnd.lua","createBlocks","sNoteText",sNoteText);                        
+    else
+      bLoop = false;
+Debug.console("manager_author_adnd.lua","createBlocks","bLoop",bLoop);
+      createBlockText(dBlocks,sNoteText);
+    end
+  end -- end while
+  --DB.setValue(nodeBlock,"text","formattedtext",sNoteText);
+end
+
+-- add non-image block, text
+function createBlockText(dBlocks,sText)
+Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
+  local nodeBlock = DB.createChild(dBlocks);
+  -- <blocktype type="string">singletext</blocktype>
+  DB.setValue(nodeBlock,"blocktype","string","singletext");
+  -- <align type="string">center</align>
+  DB.setValue(nodeBlock,"align","string","center");
+  DB.setValue(nodeBlock,"text","formattedtext",sText);
+end
+-- create a block for an inline image
+function createBlockImage(dBlocks,sText)
+Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
+  local nodeBlock = DB.createChild(dBlocks);
+-- <linklist>
+  -- <link class="imagewindow" recordname="image.id-00001">Cavern1 room 2</link>
+-- </linklist>
+  local sImageNode = sText:match("recordname=\"([%w%p%-]+)\"");
+  local nodeImage = DB.findNode(sImageNode);
+  if (nodeImage) then
+    -- <blocktype type="string">image</blocktype>
+    DB.setValue(nodeBlock,"blocktype","string","image");
+    -- <align type="string">center</align>
+    DB.setValue(nodeBlock,"align","string","center");
+    -- local nX,nY = .getImageSize();
+    -- <size type="string">nX,nY</size>
+    DB.setValue(nodeBlock,"size","string","500,500");
+    -- <caption type="string" />
+    DB.setValue(nodeBlock,"caption","string",DB.getValue(nodeImage,"name",""));
+    -- <image type="image">
+      -- <bitmap>Cavern1 room 2.jpg</bitmap>
+    -- </image>
+    DB.setValue(nodeBlock,"image","image",DB.getValue(nodeImage,"image",""));
+    -- <imagelink type="windowreference">
+      -- <class>imagewindow</class>
+      -- <recordname>image.id-00001</recordname>
+    -- </imagelink>
+    DB.setValue(nodeBlock,"imagelink","windowreference","imagewindow",sImageNode);
+  end
 end
 
 -- remove leading \d+ and punctuation on text and return it
