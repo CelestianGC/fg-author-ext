@@ -3,28 +3,24 @@
 --
 function onInit()
 	if User.isHost() then
-    local _, _, aMajor, _ = DB.getRulesetVersion();
-    local sRuleset = 'CoreRPG';
-    local nVersion = 4;
-    local bVersionOK = false;
-    local nCurrentVersion = 0;
-    for a1,a2 in pairs(aMajor) do
-      if (a1 == sRuleset and a2 == nVersion) then
-        bVersionOK = true;
-        nCurrentVersion = a2;
-        break;
-      elseif (a1 == sRuleset) then
-        nCurrentVersion = a2;
-      end
-    end
+    local sVersionRequired = "3.3.6";
+    local sMajor,sMinor,sPoint = Interface.getVersion();
+    local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
+    local bVersionOK = (sVersion == sVersionRequired);
+    bVersionOK = true; -- for now don't do checking just assume they know what they are doing and enable it
     if bVersionOK then
       Comm.registerSlashHandler("author", authorRefmanual);
       ExportManager.registerExportNode({ name = "_refmanualindex", label = "Reference Manual", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
       
       -- setup custom export process for the _refmanualindex node build
       setCustomExportProcess(performRefIndexBuild);
+        
+      -- option in option_header_client section, enable/disable to receive DING on private message received
+      OptionsManager.registerOption2("ADND_AUTHOR_DARKTHEME", false, "option_header_client", "option_label_ADND_AUTHOR_THEME", "option_entry_cycler", 
+          { labels = "AUTHOR_DARKTHEME_enabled", values = "enabled", baselabel = "AUTHOR_DARKTHEME_disabled", baseval = "disabled", default = "disabled" })
+
     else
-      Debug.chat("AUTHOR: This version requires " .. sRuleset .. " v" .. nVersion .. ". You are running v" .. nCurrentVersion .. ". AUTHOR NOT LOADED.");
+      Debug.chat("AUTHOR: This version requires v" .. sVersionRequired ..". You are running v" .. sVersion     .. ". AUTHOR NOT LOADED.");
       local CoreRPG_Version_Miss_Match_For_AUTHOR = nil
       -- this will cause red-alert on console, we do this to get their attention?
       -- CoreRPG_Version_Miss_Match_For_AUTHOR.causeAlert = nVersion;
@@ -121,7 +117,8 @@ function performRefIndexBuild()
           -- so we can replace with new one if we get <sub>
           local nodeSubChapterSub =  nodeSubChapter;
           -- <sub> found in name string, create new sub-chapter
-          if (DB.getValue(nodeStory,"subchapter",0) == 1) or (sNodeName:match("<sub>") ~= nil) then
+          local bSubchapter = (DB.getValue(nodeStory,"subchapter",0) == 1);
+          if (bSubchapter) or (sNodeName:match("<sub>") ~= nil) then
             -- strip out <sub> tag
             sNodeName = StringManager.trim(sNodeName:gsub("<sub>", "")); 
             -- create new subchapter
@@ -144,28 +141,27 @@ function performRefIndexBuild()
             nodeSubChapterSub = nodeSubChapter;
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
           end
-          -- create refpages node and current node to work on and set name/links
-          local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
-          local sCleanEntry = sNodeName;
-          --if (aProperties.bStripOrderingEntry) then
+          local sNoteText = DB.getValue(nodeStory,"text","");
+--Debug.console("manager_author_adnd.lua","performRefIndexBuild","bSubchapter",bSubchapter);                     
+--Debug.console("manager_author_adnd.lua","performRefIndexBuild","sNoteText",sNoteText);           
+          -- we check > 8 because FG puts "SPACE<p></p>" in every story
+          if (bSubchapter and sNoteText:len() > 8) or (not bSubchapter) then
+            -- create refpages node and current node to work on and set name/links
+            local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
+            local sCleanEntry = sNodeName;
+--Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCleanEntry",sCleanEntry);                     
+            --if (aProperties.bStripOrderingEntry) then
             sCleanEntry = stripLeadingNumbers(sNodeName)
-          --end
-          sNodeName = sCleanEntry;
-          local nodeRefPage = DB.createChild(dRefPages);
-          DB.setValue(nodeRefPage,"name","string",sNodeName);
-          DB.setValue(nodeRefPage,"keywords","string",sNodeName);
-          local sLinkClass = "reference_manualtextwide";
-          local sLinkRecord = "..";
-          -- if (sNodeID and sNodeID ~= "" ) then
-            -- sLinkRecord = "encounter." .. sNodeID;
-          -- else
-            -- create block node and set text from story
+            --end
+            sNodeName = sCleanEntry;
+            local nodeRefPage = DB.createChild(dRefPages);
+            DB.setValue(nodeRefPage,"name","string",sNodeName);
+            DB.setValue(nodeRefPage,"keywords","string",CleanUpKeywords(sNodeName));
+            local sLinkClass = "reference_manualtextwide";
+            local sLinkRecord = "..";
             createBlocks(nodeRefPage,nodeStory);
-            -- local dBlocks = DB.createChild(nodeRefPage,"blocks");
-            -- local nodeBlock = DB.createChild(dBlocks);
-            -- DB.setValue(nodeBlock,"text","formattedtext",DB.getValue(nodeStory,"text","EMPTY-STORY-TEXT"));
-          --end
-          DB.setValue(nodeRefPage,"listlink","windowreference",sLinkClass,sLinkRecord);
+            DB.setValue(nodeRefPage,"listlink","windowreference",sLinkClass,sLinkRecord);
+          end -- subchapter/text check
         end -- sNodeName
       end -- nodeStory
     end -- for
@@ -174,24 +170,66 @@ function performRefIndexBuild()
   ChatManager.SystemMessage("AUTHOR: created " .. sTmpRefIndexName .. " entries for export.");
 end
 
+-- this removes a lot of the meaningless words from keywords search strings 
+-- so that the search works a little better
+function CleanUpKeywords(sText)
+  local sCleanedText = sText;
+  local textMatches = {
+    'and',
+    'or',
+    'the',
+    'then',
+    'that',
+    'am',
+    'is',
+    'are',
+    'was',
+    'were',
+    'at',
+    'it',
+    'thier',
+    'their',
+    'for',
+    'of',
+    '',
+    '',
+    '',
+  };
+  for _, sFind in ipairs(textMatches) do
+    sCleanedText = sCleanedText:gsub("^" .. ManagerImportADND.nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
+    sCleanedText = sCleanedText:gsub("[%s]+" .. ManagerImportADND.nocase(sFind) .. " "," "); -- remove and replace with a space
+  end
+  sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
+  sCleanedText = sCleanedText:gsub(" [a-zA-Z] ","");  -- remove single letters surrounded by space
+  sCleanedText = sCleanedText:gsub("  "," ");         -- remove double spacing if it's there
+  sCleanedText = StringManager.trim(sCleanedText);    -- clean up ends
+  return sCleanedText;
+end
+
 function createBlocks(nodeRefPage,nodeStory)
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
   local sNoteText = DB.getValue(nodeStory,"text","");
-  --local aTextBlocks = StringManager.split(sNoteText, '<linklist>[%W]+<link class="imagewindow" recordname="[%w%W]+">[%w%W]+</link>[%W]+</linklist>', true);
+  local sFrame = sNoteText:match("#frame=([%w%p%-]+)#");
+  if (sFrame) then
+    sNoteText = sNoteText:gsub("#frame=([%w%p%-]+)#","");
+  end
   local aTextBlocks = {};
   local bLoop = true;
   while (bLoop) do
+-- <linklist>
+  -- <link class="imagewindow" recordname="image.id-00003">Map7#100x100#</link>
+-- </linklist>
     local nStart, nEnd = string.find(sNoteText,'<linklist>[^<]+<link class="imagewindow" recordname="[%w%-%p]+">[^<]+</link>[^<]+</linklist>',1);
 -- Debug.console("manager_author_adnd.lua","createBlocks","nStart",nStart);      
 -- Debug.console("manager_author_adnd.lua","createBlocks","nEnd",nEnd);
     if (nStart and nEnd) then
       local sThisBlock = string.sub(sNoteText,1,nStart-1);
 --Debug.console("manager_author_adnd.lua","createBlocks","sThisBlock",sThisBlock);
-      createBlockText(dBlocks,sThisBlock);
+      createBlockText(dBlocks,sThisBlock,sFrame);
       
       local sImageBlock = string.sub(sNoteText,nStart,nEnd);
 --Debug.console("manager_author_adnd.lua","createBlocks","sImageBlock",sImageBlock);
-      createBlockImage(dBlocks,sImageBlock);
+      createBlockImage(dBlocks,sImageBlock,sFrame);
 
       -- now trim out the above text from sNoteText
       sNoteText = string.sub(sNoteText,nEnd+1);
@@ -199,34 +237,46 @@ function createBlocks(nodeRefPage,nodeStory)
     else
       bLoop = false;
 --Debug.console("manager_author_adnd.lua","createBlocks","bLoop",bLoop);
-      createBlockText(dBlocks,sNoteText);
+      createBlockText(dBlocks,sNoteText,sFrame);
     end
   end -- end while
   --DB.setValue(nodeBlock,"text","formattedtext",sNoteText);
 end
 
 -- add non-image block, text
-function createBlockText(dBlocks,sText)
+function createBlockText(dBlocks,sText,sFrame)
+--Debug.console("manager_author_adnd.lua","createBlockText","sFrame",sFrame);
 --Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
   -- <blocktype type="string">singletext</blocktype>
   DB.setValue(nodeBlock,"blocktype","string","singletext");
+  --<frame type="string">castle</frame>
+  if (sFrame and sFrame ~= "") then
+    DB.setValue(nodeBlock,"frame","string",sFrame);
+  end
   -- <align type="string">center</align>
   DB.setValue(nodeBlock,"align","string","center");
   DB.setValue(nodeBlock,"text","formattedtext",sText);
 end
 -- create a block for an inline image
-function createBlockImage(dBlocks,sText)
+function createBlockImage(dBlocks,sText,sFrame)
+--Debug.console("manager_author_adnd.lua","createBlockImage","sFrame",sFrame);
 --Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
 -- <linklist>
   -- <link class="imagewindow" recordname="image.id-00001">Cavern1 room 2</link>
 -- </linklist>
   local sImageNode = sText:match("recordname=\"([%w%p%-]+)\"");
+  local sImageCaption = sText:match("<link class=\"imagewindow\" recordname=\"[%w%p%-]+\">([%w%p%s]+)</link>");
+--Debug.console("manager_author_adnd.lua","createBlockImage","sImageCaption",sImageCaption);  
   local nodeImage = DB.findNode(sImageNode);
   if (nodeImage) then
     -- <blocktype type="string">image</blocktype>
     DB.setValue(nodeBlock,"blocktype","string","image");
+    --<frame type="string">castle</frame>
+    if (sFrame and sFrame ~= "") then
+      DB.setValue(nodeBlock,"frame","string",sFrame);
+    end
     -- <align type="string">center</align>
     DB.setValue(nodeBlock,"align","string","center");
     local nX,nY = 400,400; 
@@ -244,12 +294,14 @@ function createBlockImage(dBlocks,sText)
 --Debug.console("manager_author_adnd.lua","createBlockImage","sSize",sSize);    
     DB.setValue(nodeBlock,"size","string",sSize);
     -- <caption type="string" />
-    local sCaption = DB.getValue(nodeImage,"name","");
+    if (not sImageCaption or sImageCaption == "") then
+      sImageCaption = DB.getValue(nodeImage,"name","");
+    end
     -- if the size changed, tag it with full size image pixels
     if (nXOriginal ~= nX or nYOriginal ~= nY) then
-      sCaption = sCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
+      sImageCaption = sImageCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
     end
-    DB.setValue(nodeBlock,"caption","string",sCaption);
+    DB.setValue(nodeBlock,"caption","string",sImageCaption);
     -- <image type="image">
       -- <bitmap>Cavern1 room 2.jpg</bitmap>
     -- </image>

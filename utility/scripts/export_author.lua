@@ -120,7 +120,6 @@ function performExport()
 						for _,nodeChild in pairs(nodeSource.getChildren()) do
 							if nodeChild.getType() == "node" then
 								local sTargetPath = nodeChild.getNodeName():gsub("^" .. vSource, aExportTargets[kSource]);
-
                 -- Extra Author parts --celestian
                 -- find the export entry if it exists
                 local rExport = getExportEntry(vSource);
@@ -130,13 +129,16 @@ function performExport()
                   sLibraryEntry = rExport.sLibraryEntry;
                 end
                 --- that allows you to create a library class of reference_manual
+-- Debug.console("export_author.lua","performExport","vSource",vSource);                
+-- Debug.console("export_author.lua","performExport","cw",cw);      
 -- Debug.console("export_author.lua","performExport","nodeChild",nodeChild);                
--- Debug.console("export_author.lua","performExport","sTargetPath",sTargetPath);                
+-- Debug.console("export_author.lua","performExport","sTargetPath",sTargetPath);            
 -- Debug.console("export_author.lua","performExport","cw.getExportType()",cw.getExportType());                
 -- Debug.console("export_author.lua","performExport","cw.label.getValue()",cw.label.getValue());                
 -- Debug.console("export_author.lua","performExport","sLibraryEntry",sLibraryEntry);                
--- Debug.console("export_author.lua","performExport","aExportTargets[1]",aExportTargets[1]);                
-								addExportNode(nodeChild, sTargetPath, cw.getExportType(), cw.label.getValue(), sLibraryEntry, aExportTargets[1]);
+-- Debug.console("export_author.lua","performExport","aExportTargets[1]",aExportTargets[1]);     
+--Debug.console("export_author.lua","performExport","aNodes[sTargetPath]",aNodes[sTargetPath]);   
+                addExportNode(nodeChild, sTargetPath, cw.getExportType(), cw.label.getValue(), sLibraryEntry, aExportTargets[1]);
 							end
 						end
 					end
@@ -146,6 +148,7 @@ function performExport()
 				for _, ew in ipairs(cw.entries.getWindows()) do
 					local node = ew.getDatabaseNode();
 					local sTargetPath = node.getNodeName();
+--Debug.console("export_author.lua","performExport","ew sTargetPath",sTargetPath);    
 					for kSource,vSource in ipairs(aExportSources) do
 						if sTargetPath:match("^" .. vSource) then
 							sTargetPath = sTargetPath:gsub("^" .. vSource, aExportTargets[kSource]);

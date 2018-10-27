@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>3.0</version>
+		<version>3.4</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 3.0.\rby Celestian" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 3.4.\rby Celestian" font="emotefont"/>
 
 	<base>		
     <!-- Author requirements -->
@@ -21,6 +21,9 @@
     <includefile source="utility/utility_author.xml" />
     <includefile source="campaign/record_story_author.xml" />
     <string name="story_label_subchapter_toggle">When exporting, set this Story as a sub-chapter in the reference manual.</string>
+    <string name="option_label_ADND_AUTHOR_THEME">AUTHOR: Highlight for DARK Theme</string>
+    <string name="AUTHOR_DARKTHEME_enabled">Enabled</string>
+    <string name="AUTHOR_DARKTHEME_disabled">Disabled</string>
   </base>
     
 </root>
