@@ -170,42 +170,6 @@ function performRefIndexBuild()
   ChatManager.SystemMessage("AUTHOR: created " .. sTmpRefIndexName .. " entries for export.");
 end
 
--- this removes a lot of the meaningless words from keywords search strings 
--- so that the search works a little better
-function CleanUpKeywords(sText)
-  local sCleanedText = sText;
-  local textMatches = {
-    'and',
-    'or',
-    'the',
-    'then',
-    'that',
-    'am',
-    'is',
-    'are',
-    'was',
-    'were',
-    'at',
-    'it',
-    'thier',
-    'their',
-    'for',
-    'of',
-    '',
-    '',
-    '',
-  };
-  for _, sFind in ipairs(textMatches) do
-    sCleanedText = sCleanedText:gsub("^" .. ManagerImportADND.nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
-    sCleanedText = sCleanedText:gsub("[%s]+" .. ManagerImportADND.nocase(sFind) .. " "," "); -- remove and replace with a space
-  end
-  sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
-  sCleanedText = sCleanedText:gsub(" [a-zA-Z] ","");  -- remove single letters surrounded by space
-  sCleanedText = sCleanedText:gsub("  "," ");         -- remove double spacing if it's there
-  sCleanedText = StringManager.trim(sCleanedText);    -- clean up ends
-  return sCleanedText;
-end
-
 function createBlocks(nodeRefPage,nodeStory)
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
   local sNoteText = DB.getValue(nodeStory,"text","");
@@ -326,6 +290,58 @@ function getAdjustedImageSize(win,image)
     nY = math.floor(nY * nNewScale);
   end
   return nX,nY;
+end
+
+-- generate ignore case patterns from string passed
+function nocase(pattern)
+  -- find an optional '%' (group 1) followed by any character (group 2)
+  local p = pattern:gsub("(%%?)(.)", function(percent, letter)
+    if percent ~= "" or not letter:match("%a") then
+      -- if the '%' matched, or `letter` is not a letter, return "as is"
+      return percent .. letter
+    else
+      -- else, return a case-insensitive character class of the matched letter
+      return string.format("[%s%s]", letter:lower(), letter:upper())
+    end
+
+  end)
+  return p
+end
+
+-- this removes a lot of the meaningless words from keywords search strings 
+-- so that the search works a little better
+function CleanUpKeywords(sText)
+  local sCleanedText = sText;
+  local textMatches = {
+    'and',
+    'or',
+    'the',
+    'then',
+    'that',
+    'am',
+    'is',
+    'are',
+    'was',
+    'were',
+    'at',
+    'it',
+    'thier',
+    'their',
+    'for',
+    'of',
+    '',
+    '',
+    '',
+  };
+  for _, sFind in ipairs(textMatches) do
+    sCleanedText = sCleanedText:gsub("^" .. nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
+    sCleanedText = sCleanedText:gsub("[%s]+" .. nocase(sFind) .. " "," "); -- remove and replace with a space
+  end
+  sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
+  sCleanedText = sCleanedText:gsub(" [a-zA-Z] ","");  -- remove single letters surrounded by space
+  sCleanedText = sCleanedText:gsub("  "," ");         -- remove double spacing if it's there
+  sCleanedText = StringManager.trim(sCleanedText);    -- clean up ends
+  return sCleanedText;
 end
 
 -- remove leading \d+ and punctuation on text and return it
