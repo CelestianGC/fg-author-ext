@@ -96,6 +96,7 @@ function performRefIndexBuild()
     local nodeChapter = DB.createChild(nodeChapters);
     local sCleanChapterName = sChapterName;
     sCleanChapterName = stripLeadingNumbers(sChapterName)
+    sCleanChapterName = StringManager.trim(sCleanChapterName);
 --Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCleanChapterName",sCleanChapterName);    
     DB.setValue(nodeChapter,"name","string",sCleanChapterName);
     -- create subchapter for this category (have to have sub in every chapter)
@@ -126,6 +127,7 @@ function performRefIndexBuild()
             local sCleanSubChapterName = sNodeName;
             --if (aProperties.bStripOrderingSubChapter) then
               sCleanSubChapterName = stripLeadingNumbers(sNodeName)
+              sCleanSubChapterName = StringManager.trim(sCleanSubChapterName);
             --end
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
             nodeSubChapter = nodeSubChapterSub;
@@ -136,6 +138,7 @@ function performRefIndexBuild()
             local sCleanSubChapterName = sNodeName;
             --if (aProperties.bStripOrderingSubChapter) then
               sCleanSubChapterName = stripLeadingNumbers(sNodeName)
+              sCleanSubChapterName = StringManager.trim(sCleanSubChapterName);
             --end
             nodeSubChapter = DB.createChild(nodeSubChapters);
             nodeSubChapterSub = nodeSubChapter;
@@ -152,6 +155,7 @@ function performRefIndexBuild()
 --Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCleanEntry",sCleanEntry);                     
             --if (aProperties.bStripOrderingEntry) then
             sCleanEntry = stripLeadingNumbers(sNodeName)
+            sCleanEntry = StringManager.trim(sCleanEntry);
             --end
             sNodeName = sCleanEntry;
             local nodeRefPage = DB.createChild(dRefPages);
@@ -313,6 +317,7 @@ end
 function CleanUpKeywords(sText)
   local sCleanedText = sText;
   local textMatches = {
+    'a',
     'and',
     'or',
     'the',
@@ -339,8 +344,9 @@ function CleanUpKeywords(sText)
   end
   sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
   sCleanedText = sCleanedText:gsub(" [a-zA-Z] ","");  -- remove single letters surrounded by space
-  sCleanedText = sCleanedText:gsub("  "," ");         -- remove double spacing if it's there
+  sCleanedText = sCleanedText:gsub("%s%s+"," ");         -- remove double+ spacing if it's there
   sCleanedText = StringManager.trim(sCleanedText);    -- clean up ends
+  sCleanedText = string.lower(sCleanedText);
   return sCleanedText;
 end
 
