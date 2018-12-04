@@ -231,6 +231,7 @@ function createBlockImage(dBlocks,sText,sFrame)
 --Debug.console("manager_author_adnd.lua","createBlockImage","sFrame",sFrame);
 --Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
+-- should we split this up by $ or \r and parse it that way for better match?
 -- <linklist>
   -- <link class="imagewindow" recordname="image.id-00001">Cavern1 room 2</link>
 -- </linklist>
