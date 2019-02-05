@@ -125,10 +125,8 @@ function performRefIndexBuild()
             -- create new subchapter
             nodeSubChapterSub = DB.createChild(nodeSubChapters);
             local sCleanSubChapterName = sNodeName;
-            --if (aProperties.bStripOrderingSubChapter) then
-              sCleanSubChapterName = stripLeadingNumbers(sNodeName)
-              sCleanSubChapterName = StringManager.trim(sCleanSubChapterName);
-            --end
+            sCleanSubChapterName = stripLeadingNumbers(sNodeName)
+            sCleanSubChapterName = StringManager.trim(sCleanSubChapterName);
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
             nodeSubChapter = nodeSubChapterSub;
           end
@@ -136,10 +134,10 @@ function performRefIndexBuild()
           -- if it just came from having a chapter
           if nodeSubChapterSub == nil then
             local sCleanSubChapterName = sNodeName;
-            --if (aProperties.bStripOrderingSubChapter) then
-              sCleanSubChapterName = stripLeadingNumbers(sNodeName)
-              sCleanSubChapterName = StringManager.trim(sCleanSubChapterName);
-            --end
+            
+            sCleanSubChapterName = stripLeadingNumbers(sNodeName)
+            sCleanSubChapterName = StringManager.trim(sCleanSubChapterName);
+            
             nodeSubChapter = DB.createChild(nodeSubChapters);
             nodeSubChapterSub = nodeSubChapter;
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
@@ -153,14 +151,21 @@ function performRefIndexBuild()
             local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
             local sCleanEntry = sNodeName;
 --Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCleanEntry",sCleanEntry);                     
-            --if (aProperties.bStripOrderingEntry) then
             sCleanEntry = stripLeadingNumbers(sNodeName)
+            local sIndentSpace = string.match(sCleanEntry,"^([%s%t]+)"); -- grab space for count in front of the actual name after stripping numbers
+            local nIndentSpace = 1;
+            if sIndentSpace then 
+              nIndentSpace = string.len(sIndentSpace) or 1;
+            end
             sCleanEntry = StringManager.trim(sCleanEntry);
-            --end
             sNodeName = sCleanEntry;
             local nodeRefPage = DB.createChild(dRefPages);
             DB.setValue(nodeRefPage,"name","string",sNodeName);
             DB.setValue(nodeRefPage,"keywords","string",CleanUpKeywords(sNodeName));
+            -- if indent space is more than 1 we add it (we assume we have 1 space between the leading number and the name)
+            if (nIndentSpace > 1) then
+              DB.setValue(nodeRefPage,"indent","number",nIndentSpace);
+            end
             local sLinkClass = "reference_manualtextwide";
             local sLinkRecord = "..";
             createBlocks(nodeRefPage,nodeStory);
@@ -175,11 +180,15 @@ function performRefIndexBuild()
 end
 
 function createBlocks(nodeRefPage,nodeStory)
+  local sFrameText = "text3";
+  local sFrameImage = "picture";
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
   local sNoteText = DB.getValue(nodeStory,"text","");
   local sFrame = sNoteText:match("#frame=([%w%p%-]+)#");
   if (sFrame) then
     sNoteText = sNoteText:gsub("#frame=([%w%p%-]+)#","");
+  else
+    sFrame = sFrameText;
   end
   local aTextBlocks = {};
   local bLoop = true;
@@ -192,20 +201,26 @@ function createBlocks(nodeRefPage,nodeStory)
 -- Debug.console("manager_author_adnd.lua","createBlocks","nEnd",nEnd);
     if (nStart and nEnd) then
       local sThisBlock = string.sub(sNoteText,1,nStart-1);
+      if validateStringForBlock(sThisBlock) then
 --Debug.console("manager_author_adnd.lua","createBlocks","sThisBlock",sThisBlock);
-      createBlockText(dBlocks,sThisBlock,sFrame);
+        createBlockText(dBlocks,sThisBlock,sFrame);
+      end
       
       local sImageBlock = string.sub(sNoteText,nStart,nEnd);
+      if validateStringForBlock(sImageBlock) then
 --Debug.console("manager_author_adnd.lua","createBlocks","sImageBlock",sImageBlock);
-      createBlockImage(dBlocks,sImageBlock,sFrame);
-
+        createBlockImage(dBlocks,sImageBlock,sFrameImage);
+      end
       -- now trim out the above text from sNoteText
       sNoteText = string.sub(sNoteText,nEnd+1);
 --Debug.console("manager_author_adnd.lua","createBlocks","sNoteText",sNoteText);                        
     else
       bLoop = false;
 --Debug.console("manager_author_adnd.lua","createBlocks","bLoop",bLoop);
-      createBlockText(dBlocks,sNoteText,sFrame);
+      if validateStringForBlock(sNoteText) then
+--Debug.console("manager_author_adnd.lua","createBlocks","sNoteText2",sNoteText);
+        createBlockText(dBlocks,sNoteText,sFrame);
+      end
     end
   end -- end while
   --DB.setValue(nodeBlock,"text","formattedtext",sNoteText);
@@ -242,10 +257,13 @@ function createBlockImage(dBlocks,sText,sFrame)
   if (nodeImage) then
     -- <blocktype type="string">image</blocktype>
     DB.setValue(nodeBlock,"blocktype","string","image");
+    
     --<frame type="string">castle</frame>
-    if (sFrame and sFrame ~= "") then
-      DB.setValue(nodeBlock,"frame","string",sFrame);
-    end
+    -- FRAMES DONT WORK ON IMAGES DOH!!!! --celestian
+    -- if (sFrame and sFrame ~= "") then
+      -- DB.setValue(nodeBlock,"frame","string",sFrame);
+    -- end
+    
     -- <align type="string">center</align>
     DB.setValue(nodeBlock,"align","string","center");
     local nX,nY = 400,400; 
@@ -281,6 +299,18 @@ function createBlockImage(dBlocks,sText,sFrame)
     -- </imagelink>
     DB.setValue(nodeBlock,"imagelink","windowreference","imagewindow",sImageNode);
   end
+end
+
+-- this checks to see if the string is valid to be written to refmanual-block. Sometimes get get a black line or empty cause of
+-- users....
+function validateStringForBlock(sBlockText)
+ local bValid = false;
+  
+  if (sBlockText:len() > 0) and (sBlockText:match("^[\r\n]$") == nil) and (sBlockText:match("^[\r\n]?<p></p>[\r\n]?$") == nil) then
+    bValid = true;
+  end
+  
+  return bValid;
 end
 
 -- this will make sure the image is no bigger than 500x500 and try to keep
