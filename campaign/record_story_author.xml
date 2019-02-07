@@ -30,28 +30,73 @@
     <label>
 			<anchored to="ref_frame" height="20" width="40">
 				<top parent="rightanchor" offset="5" />
-				<right anchor="left" relation="relative" offset="-5" />
+				<right anchor="left" relation="relative" offset="-25" />
 			</anchored>
       <tooltip textres="story_label_subchapter_toggle" />
       <static textres="AUTHOR_Label_Frame" />
     </label>
   </template>
-  <template name="author_frameselect">
-    <combobox>
+  
+<!-- add remove memorized spells -->
+  <template name="button_back_frame">
+    <buttoncontrol>
+      <state tooltipres="AUTHOR_Label_FrameSelect_Back" icon="button_page_prev" />
       <script>
-        function onInit()
-          super.onInit();
-          addItems(AuthorManagerADND.aBlockFrames);
+        function onButtonPress()
+          window.ref_frame.cycleLabel(true);
+          return true;
         end
       </script>
-			<anchored>
+    </buttoncontrol>
+  </template>
+  <template name="button_forward_frame">
+    <buttoncontrol>
+      <state tooltipres="AUTHOR_Label_FrameSelect_Forward" icon="button_page_next" />
+      <script>
+        function onButtonPress()
+          window.ref_frame.cycleLabel(false);
+          return true;
+        end
+      </script>
+    </buttoncontrol>
+  </template>
+  
+  <template name="back_frame">
+    <button_back_frame>
+        <anchored to="ref_frame" width="18" height="12">
+          <top offset="2"/>
+          <right anchor="left" relation="relative" offset="-2" />
+        </anchored>
+    </button_back_frame>
+  </template>
+  
+  <template name="forward_frame">
+    <button_forward_frame>
+        <anchored to="ref_frame" width="18" height="12">
+          <top offset="2"/>
+          <left anchor="right" relation="relative" offset="2" />
+        </anchored>
+    </button_forward_frame>
+  </template>
+  
+  <template name="author_frameselect">
+    <button_stringcycler>
+      <script>
+        function onInit()
+          local sSelections = "";
+          for _, sItem in pairs(AuthorManagerADND.aBlockFrames) do
+            sSelections = sSelections .. sItem .. "|";
+          end
+          super.onInit();
+          super.initialize(sSelections, sSelections,DB.getValue(window.getDatabaseNode(),"ref_frame",AuthorManagerADND.aBlockFrames[1]));
+          super.updateDisplay();
+        end
+      </script>
+			<anchored width="80" height="15">
 				<top parent="rightanchor" offset="8" />
-				<left offset="45" />
-				<right offset="-90" />
+				<left anchor="center" offset="-40" />
 			</anchored>
-      <listdirection>down</listdirection>
-      <listmaxsize>8</listmaxsize>
-    </combobox>
+    </button_stringcycler>
   </template>
   
 	<template name="masterindexitem_name">
@@ -68,11 +113,6 @@
 
  	<template name="note_author_header">
 		<subwindow>
-      <script>
-        function onHover()
-          setScrollPosition( 0, 0 );
-        end
-      </script>
 			<anchored>
 				<top offset="23" />
 				<left offset="15" />
@@ -101,6 +141,8 @@
       <button_checkbox_subchapter name="subchapter"/>
       <label_checkbox_subchapter name="label_subchapter"/>
       <author_frameselect name="ref_frame" />
+      <back_frame name="back_button" />
+      <forward_frame name="forward_button" />
       <label_author_frameselect name="ref_frame_label" />
  		</sheetdata>
   </windowclass>

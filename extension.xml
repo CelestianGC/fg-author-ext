@@ -26,7 +26,8 @@
     <string name="AUTHOR_DARKTHEME_disabled">Disabled</string>
     <string name="AUTHOR_Label_SubChapter">Sub-Chapter</string>
     <string name="AUTHOR_Label_Frame">Frame</string>
-    
+    <string name="AUTHOR_Label_FrameSelect_Forward">Next Frame</string>
+    <string name="AUTHOR_Label_FrameSelect_Back">Previous Frame</string>    
   </base>
     
 </root>
