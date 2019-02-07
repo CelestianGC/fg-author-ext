@@ -24,6 +24,9 @@
     <string name="option_label_ADND_AUTHOR_THEME">AUTHOR: Highlight for DARK Theme</string>
     <string name="AUTHOR_DARKTHEME_enabled">Enabled</string>
     <string name="AUTHOR_DARKTHEME_disabled">Disabled</string>
+    <string name="AUTHOR_Label_SubChapter">Sub-Chapter</string>
+    <string name="AUTHOR_Label_Frame">Frame</string>
+    
   </base>
     
 </root>

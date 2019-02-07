@@ -9,12 +9,51 @@
   <template name="button_checkbox_subchapter">
     <button_checkbox>
 			<anchored to="rightanchor" width="20" height="20">
-				<top />
+				<top parent="rightanchor" offset="5" />
 				<right anchor="left" relation="relative" offset="0" />
 			</anchored>
       <tooltip textres="story_label_subchapter_toggle" />
     </button_checkbox>
   </template>
+  <template name="label_checkbox_subchapter">
+    <label>
+			<anchored to="rightanchor" height="20" width="70">
+				<top parent="rightanchor" offset="5" />
+				<right anchor="left" relation="relative" offset="5" />
+			</anchored>
+      <tooltip textres="story_label_subchapter_toggle" />
+      <static textres="AUTHOR_Label_SubChapter" />
+    </label>
+  </template>
+
+  <template name="label_author_frameselect">
+    <label>
+			<anchored to="ref_frame" height="20" width="40">
+				<top parent="rightanchor" offset="5" />
+				<right anchor="left" relation="relative" offset="-5" />
+			</anchored>
+      <tooltip textres="story_label_subchapter_toggle" />
+      <static textres="AUTHOR_Label_Frame" />
+    </label>
+  </template>
+  <template name="author_frameselect">
+    <combobox>
+      <script>
+        function onInit()
+          super.onInit();
+          addItems(AuthorManagerADND.aBlockFrames);
+        end
+      </script>
+			<anchored>
+				<top parent="rightanchor" offset="8" />
+				<left offset="45" />
+				<right offset="-90" />
+			</anchored>
+      <listdirection>down</listdirection>
+      <listmaxsize>8</listmaxsize>
+    </combobox>
+  </template>
+  
 	<template name="masterindexitem_name">
 		<stringfield>
 			<anchored position="insidetopleft" offset="30,2" height="20">
@@ -26,12 +65,51 @@
 			<script file="campaign/scripts/masterindexitem_name_author.lua" />
 		</stringfield>
 	</template>
-  
-  <windowclass name="encounter_header" merge="merge">
+
+ 	<template name="note_author_header">
+		<subwindow>
+      <script>
+        function onHover()
+          setScrollPosition( 0, 0 );
+        end
+      </script>
+			<anchored>
+				<top offset="23" />
+				<left offset="15" />
+				<right offset="-15" />
+			</anchored>
+			<activate />
+			<fastinit />
+		</subwindow>
+	</template>
+
+ 	<template name="sub_note_header">
+		<subwindow>
+			<anchored>
+        <top parent="author_header" anchor="bottom" offset="5" />
+				<left offset="15" />
+				<right offset="-15" />
+			</anchored>
+			<activate />
+			<fastinit />
+		</subwindow>
+	</template>
+ 
+  <windowclass name="encounter_author_header">
 		<sheetdata>
-      <!-- if button_record_locked had a name I could just insert this -->
-      <button_checkbox_subchapter name="subchapter" insertbefore="name"/>
-      <!-- -->
+			<anchor_record_header_right name="rightanchor" />
+      <button_checkbox_subchapter name="subchapter"/>
+      <label_checkbox_subchapter name="label_subchapter"/>
+      <author_frameselect name="ref_frame" />
+      <label_author_frameselect name="ref_frame_label" />
  		</sheetdata>
   </windowclass>
+  
+  <windowclass name="encounter" merge="merge">
+		<sheetdata>
+			<note_author_header name="author_header" insertbefore="header">
+				<class>encounter_author_header</class>
+			</note_author_header>
+    </sheetdata>
+  </windowclass> 
 </root>

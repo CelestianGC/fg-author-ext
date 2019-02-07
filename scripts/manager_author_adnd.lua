@@ -1,12 +1,17 @@
 --
 --
 --
+aBlockFrames = {};
+
 function onInit()
 	if User.isHost() then
     local sVersionRequired = "3.3.6";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
     local bVersionOK = (sVersion == sVersionRequired);
+
+    getAvaliableBlocks();
+
     bVersionOK = true; -- for now don't do checking just assume they know what they are doing and enable it
     if bVersionOK then
       Comm.registerSlashHandler("author", authorRefmanual);
@@ -43,6 +48,18 @@ end
 
 function authorRefmanual(sCommand, sParams)
   Interface.openWindow("export", "export");
+end
+
+-- build a list of all the available frame defs we can use from the referenceblock* type.
+function getAvaliableBlocks()
+  local aFrames = Interface.getFrames();
+  for _,sFrame in pairs(aFrames) do
+    local sThisFrame = sFrame:match("^referenceblock%-([%w%a]+)");
+    if (sThisFrame) then
+      table.insert(aBlockFrames,sThisFrame);
+--Debug.console("manager_author_adnd.lua","getAvaliableBlocks","Frame found:",sThisFrame);            
+    end
+  end -- for frames
 end
 
 --=============================================================
@@ -108,6 +125,9 @@ function performRefIndexBuild()
 --Debug.console("manager_author_adnd.lua","performRefIndexBuild","sSourceNode",sSourceNode);    
       local nodeStory = DB.findNode(sSourceNode);
       if (nodeStory) then
+        --------have a frame string from story entry, or set to text4
+        local sNodeDefaultFrame = DB.getValue(nodeStory,"ref_frame","text4");
+        
         local sNodeName = DB.getValue(nodeStory,"name","");
 --Debug.console("manager_author_adnd.lua","performRefIndexBuild","sNodeName1",sNodeName);    
         --local sNodeID = DB.getValue(nodeStory,"_sourceNode","");
@@ -168,7 +188,7 @@ function performRefIndexBuild()
             end
             local sLinkClass = "reference_manualtextwide";
             local sLinkRecord = "..";
-            createBlocks(nodeRefPage,nodeStory);
+            createBlocks(nodeRefPage,nodeStory,sNodeDefaultFrame);
             DB.setValue(nodeRefPage,"listlink","windowreference",sLinkClass,sLinkRecord);
           end -- subchapter/text check
         end -- sNodeName
@@ -179,8 +199,8 @@ function performRefIndexBuild()
   ChatManager.SystemMessage("AUTHOR: created " .. sTmpRefIndexName .. " entries for export.");
 end
 
-function createBlocks(nodeRefPage,nodeStory)
-  local sFrameText = "text3";
+function createBlocks(nodeRefPage,nodeStory,sNodeDefaultFrame)
+  local sFrameText = sNodeDefaultFrame;
   local sFrameImage = "picture";
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
   local sNoteText = DB.getValue(nodeStory,"text","");
@@ -228,14 +248,19 @@ end
 
 -- add non-image block, text
 function createBlockText(dBlocks,sText,sFrame)
+  -- this just makes sure the frame for single line is 
+  -- text is doesn't have odd white bar in middle
+  local sFrameTitle = "sidebar"; 
 --Debug.console("manager_author_adnd.lua","createBlockText","sFrame",sFrame);
 --Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
   -- <blocktype type="string">singletext</blocktype>
   DB.setValue(nodeBlock,"blocktype","string","singletext");
   --<frame type="string">castle</frame>
-  if (sFrame and sFrame ~= "") then
+  if (sFrame and sFrame ~= "") and sText:match("</p>") then
     DB.setValue(nodeBlock,"frame","string",sFrame);
+  elseif (sFrame and sFrame ~= "") then
+    DB.setValue(nodeBlock,"frame","string",sFrameTitle);
   end
   -- <align type="string">center</align>
   DB.setValue(nodeBlock,"align","string","center");
