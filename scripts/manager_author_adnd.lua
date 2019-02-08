@@ -202,6 +202,7 @@ end
 
 function createBlocks(nodeRefPage,nodeStory,sNodeDefaultFrame)
   local sFrameText = sNodeDefaultFrame;
+  if sFrameText:len() < 1 then sFrameText = "text3"; end;
   local sFrameImage = "picture";
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
   local sNoteText = DB.getValue(nodeStory,"text","");
