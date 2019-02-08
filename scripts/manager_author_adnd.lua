@@ -46,6 +46,7 @@ function OnExportEvent()
 	end
 end
 
+-- slash command /author /export
 function authorRefmanual(sCommand, sParams)
   Interface.openWindow("export", "export");
 end
@@ -250,21 +251,26 @@ end
 function createBlockText(dBlocks,sText,sFrame)
   -- this just makes sure the frame for single line is 
   -- text is doesn't have odd white bar in middle
-  local sFrameTitle = "sidebar"; 
+  --local sFrameTitle = "sidebar"; 
 --Debug.console("manager_author_adnd.lua","createBlockText","sFrame",sFrame);
 --Debug.console("manager_author_adnd.lua","createBlockText","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
   -- <blocktype type="string">singletext</blocktype>
   DB.setValue(nodeBlock,"blocktype","string","singletext");
+  -- <align type="string">center</align>
+  DB.setValue(nodeBlock,"align","string","center");
   --<frame type="string">castle</frame>
   if (sFrame and sFrame ~= "") and sText:match("</p>") then
     DB.setValue(nodeBlock,"frame","string",sFrame);
-  elseif (sFrame and sFrame ~= "") then
-    DB.setValue(nodeBlock,"frame","string",sFrameTitle);
+    DB.setValue(nodeBlock,"text","formattedtext",sText);
+  elseif (sFrame and sFrame ~= "") then -- it must be a single like "title" style line
+    DB.setValue(nodeBlock,"frame","string",sFrame);
+    DB.setValue(nodeBlock,"blocktype","string","header");
+    DB.setValue(nodeBlock,"align","string","");
+    DB.setValue(nodeBlock,"text","string",stripFormattedText(sText));
+  else
+    DB.setValue(nodeBlock,"text","formattedtext",sText);
   end
-  -- <align type="string">center</align>
-  DB.setValue(nodeBlock,"align","string","center");
-  DB.setValue(nodeBlock,"text","formattedtext",sText);
 end
 -- create a block for an inline image
 function createBlockImage(dBlocks,sText,sFrame)
@@ -336,6 +342,19 @@ function validateStringForBlock(sBlockText)
   end
   
   return bValid;
+end
+
+-- strip out formattedtext from a string
+function stripFormattedText(sText)
+  local sTextOnly = sText;
+  sTextOnly = sTextOnly:gsub("</p>","\n");
+  sTextOnly = sTextOnly:gsub("<.?[ubiphUBIPH]>","");
+  sTextOnly = sTextOnly:gsub("<.?table>","");
+  sTextOnly = sTextOnly:gsub("<.?frame>","");
+  sTextOnly = sTextOnly:gsub("<.?t.?>","");
+  sTextOnly = sTextOnly:gsub("<.?list>","");
+  sTextOnly = sTextOnly:gsub("<.?li>","");
+  return sTextOnly;  
 end
 
 -- this will make sure the image is no bigger than 500x500 and try to keep
