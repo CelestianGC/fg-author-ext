@@ -28,6 +28,8 @@
     <string name="AUTHOR_Label_Frame">Frame</string>
     <string name="AUTHOR_Label_FrameSelect_Forward">Next Frame</string>
     <string name="AUTHOR_Label_FrameSelect_Back">Previous Frame</string>    
+    <string name="AUTHOR_Label_FrameGlobalDefault">When exporting, set this frame as the default for all Stories without a frame set.</string> 
+    
   </base>
     
 </root>

@@ -92,12 +92,13 @@
     <button_stringcycler>
       <script>
         function onInit()
-          local sSelections = "";
+          local sSelections = "none";
           for _, sItem in pairs(AuthorManagerADND.aBlockFrames) do
-            sSelections = sSelections .. sItem .. "|";
+            sSelections = sSelections .. "|" .. sItem;
           end
+          local sDefaultValue = DB.getValue(window.getDatabaseNode(),"ref_frame");
           super.onInit();
-          super.initialize(sSelections, sSelections,DB.getValue(window.getDatabaseNode(),"ref_frame",AuthorManagerADND.aBlockFrames[1]));
+          super.initialize(sSelections, sSelections,sDefaultValue,sDefaultValue);
           super.updateDisplay();
         end
       </script>
@@ -147,7 +148,7 @@
 		</subwindow>
 	</template>
  
-  <!-- author configuration (chapter/frame) selection window -->
+  <!-- author configuration for story (chapter/frame) selection window -->
   <windowclass name="encounter_author_header">
 		<sheetdata>
 			<anchor_record_header_right name="rightanchor" />
@@ -168,4 +169,44 @@
 			</note_author_header>
     </sheetdata>
   </windowclass> 
+  
+  <!-- we needed to make the frame_export_file height larger to make room for the default frame select -->
+  <template name="frame_export_file">
+		<genericcontrol>
+			<anchored to="contentanchor" height="80">
+				<top anchor="bottom" relation="relative" offset="10" />
+				<left />
+				<right />
+			</anchored>
+			<frame name="groupbox" offset="10,10,10,10" />
+		</genericcontrol>
+	</template>
+  
+  <!-- author configuration for EXPORT (frame)  -->
+  <windowclass name="export_author_options">
+		<sheetdata>
+			<anchor_record_header_right name="rightanchor" />
+      <author_frameselect name="ref_frame">
+        <tooltip textres="AUTHOR_Label_FrameGlobalDefault" />
+      </author_frameselect>
+      <back_frame name="back_button" />
+      <forward_frame name="forward_button" />
+      <label_author_frameselect name="ref_frame_label">
+        <tooltip textres="AUTHOR_Label_FrameGlobalDefault" />
+      </label_author_frameselect>
+ 		</sheetdata>
+  </windowclass>
+  
+  <!-- Insert the author frame global default select option -->
+  <windowclass name="export" merge="merge">
+  <sheetdata>
+    <note_author_header name="author_selections" insertafter="thumbnail">
+			<anchored to="thumbnail" >
+				<top position="bottomleft" offset="15" />
+				<left offset="-150" />
+			</anchored>
+      <class>export_author_options</class>
+    </note_author_header>
+  </sheetdata>
+  </windowclass>
 </root>

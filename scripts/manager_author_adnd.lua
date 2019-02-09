@@ -72,7 +72,6 @@ end
 
 -- perform the export to Ref-Manual fields.
 function performRefIndexBuild()
---Debug.console("author.lua","performRefIndexBuild","",nil);
   local sTmpRefIndexName = '_refmanualindex';
   
   DB.deleteNode(sTmpRefIndexName); -- delete any previous _refmanualindex node work
@@ -82,25 +81,17 @@ function performRefIndexBuild()
   aStoryCategories = {};
   --
   local dStoryRaw = DB.getChildren("encounter");
-  -- local dRoot = DB.createChild("_authorRefmanual_tmp");
-  -- local dStories = DB.createChild(dRoot,"stories");
-  -- local dStoryCategories = DB.createChild(dStories,"category");
-
+  local nodeExport = DB.findNode("export");
+  local sFrameGlobalDefault = DB.getValue(nodeExport,"ref_frame","text4");
+--Debug.console("manager_author_adnd.lua","performRefIndexBuild","sFrameGlobalDefault",sFrameGlobalDefault);  
   for _,node in pairs(dStoryRaw) do
     local sCategory = UtilityManager.getNodeCategory(node);
     -- only apply if the record is in a category
     if (sCategory ~= "") then
-      -- -- strip out all periods because we use category name as a child/node name --DO SOMETHING ELSE
-      -- sCategory = sCategory:gsub("%.",""); 
-      --
       if aStoryCategories[sCategory] == nil then
         aStoryCategories[sCategory] = {};
       end
       aStoryCategories[sCategory][node.getPath()] = DB.getValue(node,"name","");
-      -- local sNodeID = node.getPath():match("(id%-%d+)$");
-      -- if (sNodeID) then
-        -- DB.setValue(nodeEntry,"_sourceNode","string",sNodeID);
-      -- end
     end
   end
   -- reference section
@@ -108,14 +99,12 @@ function performRefIndexBuild()
   local nodeChapters = DB.createChild(nodeRefIndex,"chapters");
   -- flip through all categories, create sub per category and and entries within category
   for _,sCatagoryName in pairs(sortCatagoriesByName(aStoryCategories)) do
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCatagoryName",sCatagoryName);    
     -- create chapter for this category
     local sChapterName = sCatagoryName;
     local nodeChapter = DB.createChild(nodeChapters);
     local sCleanChapterName = sChapterName;
     sCleanChapterName = stripLeadingNumbers(sChapterName)
     sCleanChapterName = StringManager.trim(sCleanChapterName);
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCleanChapterName",sCleanChapterName);    
     DB.setValue(nodeChapter,"name","string",sCleanChapterName);
     -- create subchapter for this category (have to have sub in every chapter)
     local nodeSubChapters = DB.createChild(nodeChapter,"subchapters");
@@ -123,18 +112,14 @@ function performRefIndexBuild()
     -- sub-chapter per chapter unless <sub> string found in story name
     local nodeSubChapter = nil;
     for _,sSourceNode in pairs(sortStoriesByName(aStoryCategories[sCatagoryName])) do
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sSourceNode",sSourceNode);    
       local nodeStory = DB.findNode(sSourceNode);
       if (nodeStory) then
         --------have a frame string from story entry, or set to text4
-        local sNodeDefaultFrame = DB.getValue(nodeStory,"ref_frame","text4");
-        
+        local sNodeDefaultFrame = DB.getValue(nodeStory,"ref_frame",sFrameGlobalDefault);
+        if sNodeDefaultFrame:len() < 1 then sNodeDefaultFrame = sFrameGlobalDefault; end;
         local sNodeName = DB.getValue(nodeStory,"name","");
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sNodeName1",sNodeName);    
         --local sNodeID = DB.getValue(nodeStory,"_sourceNode","");
---Debug.console("author.lua","performExport","sNodeID",sNodeID);         
         if (sNodeName ~= "") then
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sNodeName2",sNodeName); 
           -- store current subchapter node in "local" var
           -- so we can replace with new one if we get <sub>
           local nodeSubChapterSub =  nodeSubChapter;
@@ -164,14 +149,11 @@ function performRefIndexBuild()
             DB.setValue(nodeSubChapterSub,"name","string",sCleanSubChapterName);
           end
           local sNoteText = DB.getValue(nodeStory,"text","");
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","bSubchapter",bSubchapter);                     
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sNoteText",sNoteText);           
           -- we check > 8 because FG puts "SPACE<p></p>" in every story
           if (bSubchapter and sNoteText:len() > 8) or (not bSubchapter) then
             -- create refpages node and current node to work on and set name/links
             local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
             local sCleanEntry = sNodeName;
---Debug.console("manager_author_adnd.lua","performRefIndexBuild","sCleanEntry",sCleanEntry);                     
             sCleanEntry = stripLeadingNumbers(sNodeName)
             local sIndentSpace = string.match(sCleanEntry,"^([%s%t]+)"); -- grab space for count in front of the actual name after stripping numbers
             local nIndentSpace = 1;
@@ -200,18 +182,10 @@ function performRefIndexBuild()
   ChatManager.SystemMessage("AUTHOR: created " .. sTmpRefIndexName .. " entries for export.");
 end
 
-function createBlocks(nodeRefPage,nodeStory,sNodeDefaultFrame)
-  local sFrameText = sNodeDefaultFrame;
-  if sFrameText:len() < 1 then sFrameText = "text3"; end;
+function createBlocks(nodeRefPage,nodeStory,sFrameText)
   local sFrameImage = "picture";
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
   local sNoteText = DB.getValue(nodeStory,"text","");
-  local sFrame = sNoteText:match("#frame=([%w%p%-]+)#");
-  if (sFrame) then
-    sNoteText = sNoteText:gsub("#frame=([%w%p%-]+)#","");
-  else
-    sFrame = sFrameText;
-  end
   local aTextBlocks = {};
   local bLoop = true;
   while (bLoop) do
@@ -224,28 +198,22 @@ function createBlocks(nodeRefPage,nodeStory,sNodeDefaultFrame)
     if (nStart and nEnd) then
       local sThisBlock = string.sub(sNoteText,1,nStart-1);
       if validateStringForBlock(sThisBlock) then
---Debug.console("manager_author_adnd.lua","createBlocks","sThisBlock",sThisBlock);
-        createBlockText(dBlocks,sThisBlock,sFrame);
+        createBlockText(dBlocks,sThisBlock,sFrameText);
       end
       
       local sImageBlock = string.sub(sNoteText,nStart,nEnd);
       if validateStringForBlock(sImageBlock) then
---Debug.console("manager_author_adnd.lua","createBlocks","sImageBlock",sImageBlock);
         createBlockImage(dBlocks,sImageBlock,sFrameImage);
       end
       -- now trim out the above text from sNoteText
       sNoteText = string.sub(sNoteText,nEnd+1);
---Debug.console("manager_author_adnd.lua","createBlocks","sNoteText",sNoteText);                        
     else
       bLoop = false;
---Debug.console("manager_author_adnd.lua","createBlocks","bLoop",bLoop);
       if validateStringForBlock(sNoteText) then
---Debug.console("manager_author_adnd.lua","createBlocks","sNoteText2",sNoteText);
-        createBlockText(dBlocks,sNoteText,sFrame);
+        createBlockText(dBlocks,sNoteText,sFrameText);
       end
     end
   end -- end while
-  --DB.setValue(nodeBlock,"text","formattedtext",sNoteText);
 end
 
 -- add non-image block, text
@@ -261,10 +229,10 @@ function createBlockText(dBlocks,sText,sFrame)
   -- <align type="string">center</align>
   DB.setValue(nodeBlock,"align","string","center");
   --<frame type="string">castle</frame>
-  if (sFrame and sFrame ~= "") and sText:match("</p>") then
+  if (sFrame and sFrame ~= "") and (sText:match("</p>") or sText:match("<linklist>")) and not sFrame:match("^none$") then
     DB.setValue(nodeBlock,"frame","string",sFrame);
     DB.setValue(nodeBlock,"text","formattedtext",sText);
-  elseif (sFrame and sFrame ~= "") then -- it must be a single like "title" style line
+  elseif (sFrame and sFrame ~= "") and not sFrame:match("^none$") then -- it must be a single like "title" style line
     DB.setValue(nodeBlock,"frame","string",sFrame);
     DB.setValue(nodeBlock,"blocktype","string","header");
     DB.setValue(nodeBlock,"align","string","");
@@ -310,7 +278,6 @@ function createBlockImage(dBlocks,sText,sFrame)
     end
     -- <size type="string">nX,nY</size>
     local sSize = nX .. "," .. nY;
---Debug.console("manager_author_adnd.lua","createBlockImage","sSize",sSize);    
     DB.setValue(nodeBlock,"size","string",sSize);
     -- <caption type="string" />
     if (not sImageCaption or sImageCaption == "") then
