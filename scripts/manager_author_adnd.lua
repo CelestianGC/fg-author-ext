@@ -377,9 +377,7 @@ function CleanUpKeywords(sText)
     'their',
     'for',
     'of',
-    '',
-    '',
-    '',
+    'another',
   };
   for _, sFind in ipairs(textMatches) do
     sCleanedText = sCleanedText:gsub("^" .. nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
