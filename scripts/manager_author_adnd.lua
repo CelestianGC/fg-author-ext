@@ -446,7 +446,7 @@ function processRecordLock(sCommand, sParams)
   processRecordLocking(sParams:lower(),1);
 end
 -- general locking function, take name and whether should lock or not
-function processRecordLocking(sRecordName,nLock)
+function processRecordLocking(sParams,nLock)
   local sRecordName = sParams:lower();
   if sRecordName == "all" then
 Debug.console("data_library_adnd.lua","processRecordLocking","Locking1: ",sRecordName);
