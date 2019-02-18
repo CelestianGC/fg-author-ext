@@ -5,6 +5,10 @@ aBlockFrames = {};
 
 function onInit()
 	if User.isHost() then
+    -- to lock/unlock records
+    Comm.registerSlashHandler("lockrecords", processRecordLock);
+    Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
+    --
     local sVersionRequired = "3.3.6";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
@@ -415,4 +419,49 @@ function sortStoriesByName(aStories)
   end
   table.sort(aSorted, function(a, b) return aStories[a] < aStories[b] end);
   return aSorted;
+end
+
+
+-- default record list for "all" lock/unlock
+local aDefaultLockAll = {
+  "background",
+  "class",
+  "encounter",
+  "image",
+  "item",
+  "notes",
+  "npc",
+  "race",
+  "skill",
+  "spell",
+  "tables",
+  "treasureparcels",
+};
+-- process unlocks
+function processRecordUnLock(sCommand, sParams)
+  processRecordLocking(sParams:lower(),0);
+end
+-- Search through param passed record and set it locked.
+function processRecordLock(sCommand, sParams)
+  processRecordLocking(sParams:lower(),1);
+end
+-- general locking function, take name and whether should lock or not
+function processRecordLocking(sRecordName,nLock)
+  local sRecordName = sParams:lower();
+  if sRecordName == "all" then
+Debug.console("data_library_adnd.lua","processRecordLocking","Locking1: ",sRecordName);
+    for _, sRecord in pairs(aDefaultLockAll) do
+      editLockRecords(sRecord,nLock);
+    end
+  elseif DB.getChildCount(sRecordName) > 0 then
+Debug.console("data_library_adnd.lua","processRecordLocking","Locking2: ",sRecordName);
+    editLockRecords(sRecordName,nLock);
+  end -- valid record
+end
+-- pass name to lock records for this type
+function editLockRecords(sRecord,nLock)
+  for _,nodeLock in pairs(DB.getChildren(sRecord)) do
+    DB.setValue(nodeLock,"locked","number",1);
+    Debug.console("data_library_adnd.lua","lockRecord","Locked node:",nodeLock);
+  end -- record for
 end
