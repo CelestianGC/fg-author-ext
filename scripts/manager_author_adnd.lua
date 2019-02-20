@@ -233,14 +233,15 @@ function createBlockText(dBlocks,sText,sFrame)
   -- <align type="string">center</align>
   DB.setValue(nodeBlock,"align","string","center");
   --<frame type="string">castle</frame>
-  if (sFrame and sFrame ~= "") and (sText:match("</p>") or sText:match("<linklist>")) and not sFrame:match("^none$") then
+  --if (sFrame and sFrame ~= "") and (sText:match("</p>") or sText:match("<linklist>")) and not sFrame:match("^none$") then
+  if (sFrame and sFrame ~= "") and not sFrame:match("^none$") then
     DB.setValue(nodeBlock,"frame","string",sFrame);
     DB.setValue(nodeBlock,"text","formattedtext",sText);
-  elseif (sFrame and sFrame ~= "") and not sFrame:match("^none$") then -- it must be a single like "title" style line
-    DB.setValue(nodeBlock,"frame","string",sFrame);
-    DB.setValue(nodeBlock,"blocktype","string","header");
-    DB.setValue(nodeBlock,"align","string","");
-    DB.setValue(nodeBlock,"text","string",stripFormattedText(sText));
+  -- elseif (sFrame and sFrame ~= "") and not sFrame:match("^none$") then -- it must be a single like "title" style line
+    -- DB.setValue(nodeBlock,"frame","string",sFrame);
+    -- DB.setValue(nodeBlock,"blocktype","string","header");
+    -- DB.setValue(nodeBlock,"align","string","");
+    -- DB.setValue(nodeBlock,"text","string",stripFormattedText(sText));
   else
     DB.setValue(nodeBlock,"text","formattedtext",sText);
   end
@@ -449,19 +450,25 @@ end
 function processRecordLocking(sParams,nLock)
   local sRecordName = sParams:lower();
   if sRecordName == "all" then
-Debug.console("data_library_adnd.lua","processRecordLocking","Locking1: ",sRecordName);
+--Debug.console("manager_author_adnd.lua","processRecordLocking","Locking1: ",sRecordName);
     for _, sRecord in pairs(aDefaultLockAll) do
       editLockRecords(sRecord,nLock);
     end
   elseif DB.getChildCount(sRecordName) > 0 then
-Debug.console("data_library_adnd.lua","processRecordLocking","Locking2: ",sRecordName);
+--Debug.console("manager_author_adnd.lua","processRecordLocking","Locking2: ",sRecordName);
     editLockRecords(sRecordName,nLock);
   end -- valid record
 end
 -- pass name to lock records for this type
 function editLockRecords(sRecord,nLock)
+  local nLockCount = 0;
   for _,nodeLock in pairs(DB.getChildren(sRecord)) do
+    nLockCount = nLockCount + 1;
     DB.setValue(nodeLock,"locked","number",1);
-    Debug.console("data_library_adnd.lua","lockRecord","Locked node:",nodeLock);
+    --Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
   end -- record for
+  local sLockedText = "locked";
+  if nLock == 0 then sLockedText = "unlocked"; end;
+  
+  ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecord .. ".");  
 end
