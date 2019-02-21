@@ -472,15 +472,16 @@ function editLockRecords(sRecord,nLock)
 
     -- lock npc weapon quicknote for 2E npcs
     if sRecord == "npc" and sRulesetName == "2E" then
+      -- lock powers
+      lockSubRecords(nodeLock, "powers",nLock);
+      -- lock npc ability quicknote for 2E npcs
+      lockSubRecords(nodeLock, "abilitynoteslist",nLock);
+      
       for _,nodeItemNote in pairs(DB.getChildren(nodeLock.getPath() .. ".weaponlist")) do
         local sClass, sRecord = DB.getValue(nodeItemNote,"shortcut","","");
         if (sClass == "quicknote") then
           DB.setValue(nodeItemNote,"itemnote.locked","number",nLock);
         end
-      end
-      -- lock npc ability quicknote for 2E npcs
-      for _,nodeAbilityNote in pairs(DB.getChildren(nodeLock.getPath() .. ".abilitynoteslist")) do
-          DB.setValue(nodeAbilityNote,"locked","number",nLock);
       end
     end -- quicknotes
     
@@ -490,4 +491,11 @@ function editLockRecords(sRecord,nLock)
   if nLock == 0 then sLockedText = "unlocked"; end;
   
   ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecord .. ".");  
+end
+
+-- called for sub records that also need to be locked.
+function lockSubRecords(nodeLock, sRecord, nLock)
+  for _,nodeSubLock in pairs(DB.getChildren(nodeLock.getPath() .. "." .. sRecord)) do
+      DB.setValue(nodeSubLock,"locked","number",nLock);
+  end
 end
