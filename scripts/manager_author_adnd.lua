@@ -464,10 +464,22 @@ function processRecordLocking(sParams,nLock)
 end
 -- pass name to lock records for this type
 function editLockRecords(sRecord,nLock)
+  local sRulesetName = User.getRulesetName();
   local nLockCount = 0;
   for _,nodeLock in pairs(DB.getChildren(sRecord)) do
     nLockCount = nLockCount + 1;
     DB.setValue(nodeLock,"locked","number",nLock);
+
+    -- lock npc quicknote for 2E npcs
+    if sRecord == "npc" and sRulesetName == "2E" then
+      for _,nodeItemNote in pairs(DB.getChildren(nodeLock.getPath() .. ".weaponlist")) do
+        local sClass, sRecord = DB.getValue(nodeItemNote,"shortcut","","");
+        if (sClass == "quicknote") then
+          DB.setValue(nodeItemNote,"itemnote.locked","number",nLock);
+        end
+      end
+    end -- quicknotes
+    
     --Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
   end -- record for
   local sLockedText = "locked";
