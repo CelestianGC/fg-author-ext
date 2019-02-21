@@ -470,13 +470,17 @@ function editLockRecords(sRecord,nLock)
     nLockCount = nLockCount + 1;
     DB.setValue(nodeLock,"locked","number",nLock);
 
-    -- lock npc quicknote for 2E npcs
+    -- lock npc weapon quicknote for 2E npcs
     if sRecord == "npc" and sRulesetName == "2E" then
       for _,nodeItemNote in pairs(DB.getChildren(nodeLock.getPath() .. ".weaponlist")) do
         local sClass, sRecord = DB.getValue(nodeItemNote,"shortcut","","");
         if (sClass == "quicknote") then
           DB.setValue(nodeItemNote,"itemnote.locked","number",nLock);
         end
+      end
+      -- lock npc ability quicknote for 2E npcs
+      for _,nodeAbilityNote in pairs(DB.getChildren(nodeLock.getPath() .. ".abilitynoteslist")) do
+          DB.setValue(nodeAbilityNote,"locked","number",nLock);
       end
     end -- quicknotes
     
