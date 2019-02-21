@@ -71,7 +71,7 @@ end
 --
 -- Create _refmanualindex node with Story text to create a simple ref-manual.
 -- Each "category" in the <encounters> list is a chapter and the chapter contains those story entries.
--- Story entries with <sub> will be setup as a sub-chapter.
+-- Story entries with checked "Sub-chapter" will be setup as a sub-chapter.
 --
 
 -- perform the export to Ref-Manual fields.
@@ -159,7 +159,7 @@ function performRefIndexBuild()
             local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
             local sCleanEntry = sNodeName;
             sCleanEntry = stripLeadingNumbers(sNodeName)
-            local sIndentSpace = string.match(sCleanEntry,"^([%s%t]+)"); -- grab space for count in front of the actual name after stripping numbers
+            local sIndentSpace = string.match(sCleanEntry,"^([_%s%t]+)"); -- grab space for count in front of the actual name after stripping numbers
             local nIndentSpace = 1;
             if sIndentSpace then 
               nIndentSpace = string.len(sIndentSpace) or 1;
@@ -186,6 +186,8 @@ function performRefIndexBuild()
   ChatManager.SystemMessage("AUTHOR: created " .. sTmpRefIndexName .. " entries for export.");
 end
 
+-- create text/image blocks
+-- TODO: instead, flip through line by line and look for markup? -- celestian
 function createBlocks(nodeRefPage,nodeStory,sFrameText)
   local sFrameImage = "picture";
   local dBlocks = DB.createChild(nodeRefPage,"blocks");
@@ -290,7 +292,8 @@ function createBlockImage(dBlocks,sText,sFrame)
     end
     -- if the size changed, tag it with full size image pixels
     if (nXOriginal ~= nX or nYOriginal ~= nY) then
-      sImageCaption = sImageCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
+      -- remove the size of image addition --celestian
+      --sImageCaption = sImageCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
     end
     DB.setValue(nodeBlock,"caption","string",sImageCaption);
     -- <image type="image">
@@ -464,7 +467,7 @@ function editLockRecords(sRecord,nLock)
   local nLockCount = 0;
   for _,nodeLock in pairs(DB.getChildren(sRecord)) do
     nLockCount = nLockCount + 1;
-    DB.setValue(nodeLock,"locked","number",1);
+    DB.setValue(nodeLock,"locked","number",nLock);
     --Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
   end -- record for
   local sLockedText = "locked";
