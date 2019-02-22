@@ -22,7 +22,9 @@ function onInit()
     if bVersionOK then
       Comm.registerSlashHandler("author", authorRefmanual);
       ExportManager.registerExportNode({ name = "_refmanualindex", label = "Reference Manual", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
-      
+      --ExportManager.registerExportNode({ name = "_hiddenstory", label = "Hidden Story", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
+      --ExportManager.registerExportNode({ name = "hiddenstory", label = "Hidden Story", export="hiddenstory", exportref="reference.hiddendata", sLibraryEntry="reference_list"});
+     
       -- setup custom export process for the _refmanualindex node build
       setCustomExportProcess(performRefIndexBuild);
         
@@ -44,10 +46,10 @@ local aCustomExportProcess = {};
 function setCustomExportProcess(fProcess)
 	table.insert(aCustomExportProcess, fProcess);
 end
-function OnExportEvent()
+function OnExportEvent(list)
 	if #aCustomExportProcess > 0 then
 		for _,fCustomProcess in ipairs(aCustomExportProcess) do
-        fCustomProcess();
+        fCustomProcess(list);
     end
 	end
 end
@@ -69,6 +71,18 @@ function getAvaliableBlocks()
   end -- for frames
 end
 
+function exportingHiddenStories(list)
+  local bExporting = false;
+  for _, cw in ipairs(list.getWindows()) do
+    if cw.all.getValue() == 1 then
+      if cw.label.getValue() == Interface.getString("library_recordtype_label_hiddenstory") then
+        bExporting = true;
+        break;
+      end
+    end
+  end
+  return bExporting;
+end
 --=============================================================
 --
 -- Create _refmanualindex node with Story text to create a simple ref-manual.
@@ -77,20 +91,25 @@ end
 --
 
 -- perform the export to Ref-Manual fields.
-function performRefIndexBuild()
+function performRefIndexBuild(list)
   local sTmpRefIndexName = '_refmanualindex';
+  local sHiddenStoryName = 'hiddenstory';
   
   DB.deleteNode(sTmpRefIndexName); -- delete any previous _refmanualindex node work
+  DB.deleteNode(sHiddenStoryName); -- delete any previous hiddenstory node work
 
   -- pickup all stories
   -- there is probably a better way to do this, table of rRecords?
   aStoryCategories = {};
   --
+  
   local dStoryRaw = DB.getChildren("encounter");
   local nodeExport = DB.findNode("export");
   local sFrameGlobalDefault = DB.getValue(nodeExport,"ref_frame","text4");
+  local bExportingHiddenStories = exportingHiddenStories(list);
 --Debug.console("manager_author_adnd.lua","performRefIndexBuild","sFrameGlobalDefault",sFrameGlobalDefault);  
   for _,node in pairs(dStoryRaw) do
+    -- put stories in a consumable array by categories
     local sCategory = UtilityManager.getNodeCategory(node);
     -- only apply if the record is in a category
     if (sCategory ~= "") then
@@ -99,7 +118,20 @@ function performRefIndexBuild()
       end
       aStoryCategories[sCategory][node.getPath()] = DB.getValue(node,"name","");
     end
+    -- end category dealings.
+    
+    -- here we hide Story entries using same ID's so we can
+    -- link to them in records like class/items
+    if bExportingHiddenStories then
+      local sNodeID = node.getPath():match("%.(id%-%d+)$");
+      if sNodeID then
+        local nodeHidden = DB.createNode(sHiddenStoryName .. "." .. sNodeID);
+        DB.copyNode(node,nodeHidden);
+      end
+    end
+    -- Done with hiddenstory
   end
+  
   -- reference section
   local nodeRefIndex = DB.createNode(sTmpRefIndexName);
   local nodeChapters = DB.createChild(nodeRefIndex,"chapters");

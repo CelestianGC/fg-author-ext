@@ -70,7 +70,7 @@ end
 
 function performExport()
   -- run custom pre-export functions if exist.
-  AuthorManagerADND.OnExportEvent(); 
+  AuthorManagerADND.OnExportEvent(list); 
   
 	-- Reset data
 	aProperties = {};
@@ -129,8 +129,8 @@ function performExport()
                   sLibraryEntry = rExport.sLibraryEntry;
                 end
                 --- that allows you to create a library class of reference_manual
--- Debug.console("export_author.lua","performExport","vSource",vSource);                
--- Debug.console("export_author.lua","performExport","cw",cw);      
+--Debug.console("export_author.lua","performExport","vSource",vSource);                
+--Debug.console("export_author.lua","performExport","cw",cw);      
 -- Debug.console("export_author.lua","performExport","nodeChild",nodeChild);                
 -- Debug.console("export_author.lua","performExport","sTargetPath",sTargetPath);            
 -- Debug.console("export_author.lua","performExport","cw.getExportType()",cw.getExportType());                
@@ -182,6 +182,13 @@ function getExportEntry(sName)
   local rExport = {};
 	for k,v in pairs(ExportManager.aExport) do
 		if string.upper(v.name) == string.upper(sName) then
+-- Debug.console("export_author.lua","getExportEntry","v.name",v.name);                
+-- Debug.console("export_author.lua","getExportEntry","v.class",v.class);                
+-- Debug.console("export_author.lua","getExportEntry","v.label",v.label);            
+-- Debug.console("export_author.lua","getExportEntry","v.label",v.label);                
+-- Debug.console("export_author.lua","getExportEntry","v.export",v.export);                
+-- Debug.console("export_author.lua","getExportEntry","v.exportref",v.exportref);                
+-- Debug.console("export_author.lua","getExportEntry","v.sLibraryEntry",v.sLibraryEntry);                
 			--nIndex = k;
       rExport.name = v.name;
       rExport.class = v.class;
