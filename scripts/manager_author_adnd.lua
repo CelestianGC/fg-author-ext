@@ -9,6 +9,8 @@ function onInit()
     Comm.registerSlashHandler("lockrecords", processRecordLock);
     Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
     --
+    Comm.registerSlashHandler("addtokens", addTokensIfMissing);
+    --
     local sVersionRequired = "3.3.6";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
@@ -498,4 +500,29 @@ function lockSubRecords(nodeLock, sRecord, nLock)
   for _,nodeSubLock in pairs(DB.getChildren(nodeLock.getPath() .. "." .. sRecord)) do
       DB.setValue(nodeSubLock,"locked","number",nLock);
   end
+end
+
+-- add letter tokens to npcs if they are missing one
+function addTokensIfMissing()
+  local nCount = 0;
+--<token type="token">tokens/Medium/a.png@Letter Tokens</token>
+  for _,nodeNPC in pairs(DB.getChildren("npc")) do
+    local sName = DB.getValue(nodeNPC,"name","");
+    local tToken = DB.getValue(nodeNPC,"token","");
+--Debug.console("manager_author_adnd.lua","addTokensIfMissing","sName",sName);      
+--Debug.console("manager_author_adnd.lua","addTokensIfMissing","tToken",tToken);      
+    local sToken = nil;
+    if (not tToken or tToken == "") then
+      nCount = nCount + 1;
+      local sFirstLetter = StringManager.trim(sName):match("^([a-zA-Z])");
+      if sFirstLetter then
+        sToken = "tokens/Medium/" .. sFirstLetter:lower() .. ".png@Letter Tokens";
+      else
+        sToken = "tokens/Medium/z.png@Letter Tokens";
+      end
+--Debug.console("manager_author_adnd.lua","addTokensIfMissing","sToken",sToken);      
+      DB.setValue(nodeNPC, "token", "token", sToken);
+    end
+  end
+  ChatManager.SystemMessage("AUTHOR: Added letter token to " .. nCount .. " npcs.");  
 end
