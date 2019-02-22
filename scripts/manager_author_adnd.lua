@@ -41,7 +41,7 @@ function onInit()
   end
 end
 
--- run custom process function(s) at the begining of an export
+-- run custom process function(s) at the begining of an export passing it the "list" control
 local aCustomExportProcess = {};
 function setCustomExportProcess(fProcess)
 	table.insert(aCustomExportProcess, fProcess);
@@ -71,13 +71,18 @@ function getAvaliableBlocks()
   end -- for frames
 end
 
+-- check and see if the Hidden Story record export is enabled
 function exportingHiddenStories(list)
   local bExporting = false;
-  for _, cw in ipairs(list.getWindows()) do
-    if cw.all.getValue() == 1 then
-      if cw.label.getValue() == Interface.getString("library_recordtype_label_hiddenstory") then
-        bExporting = true;
-        break;
+  local sHidden = Interface.getString("library_recordtype_label_hiddenstory") or "";
+  if sHidden ~= '' then
+    for _, cw in ipairs(list.getWindows()) do
+      -- see if the hiddenstory datatype is selected for export
+      if cw.all.getValue() == 1 then
+        if cw.label.getValue() == Interface.getString("library_recordtype_label_hiddenstory") then
+          bExporting = true;
+          break;
+        end
       end
     end
   end
