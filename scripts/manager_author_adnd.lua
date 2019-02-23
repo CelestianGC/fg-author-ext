@@ -132,6 +132,11 @@ function performRefIndexBuild(list)
       if sNodeID then
         local nodeHidden = DB.createNode(sHiddenStoryName .. "." .. sNodeID);
         DB.copyNode(node,nodeHidden);
+        -- since this is a duplicate of stories and we just need them there we can strip the numbers
+        -- used for ordering. Might need to revisit this in the future... --celestian
+        local sHiddenName = DB.getValue(nodeHidden,"name","");
+        DB.setValue(nodeHidden,"name","string",StringManager.trim(stripLeadingNumbers(sHiddenName)));
+        --
       end
     end
     -- Done with hiddenstory
