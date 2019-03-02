@@ -473,15 +473,22 @@ end
 -- default record list for "all" lock/unlock
 local aDefaultLockAll = {
   "background",
+  "battle",
+  "battlerandom",
   "class",
+  "effects",
   "encounter",
   "image",
   "item",
+  "modifiers",
   "notes",
   "npc",
+  "quest",
   "race",
   "skill",
   "spell",
+  "story",
+  "storytemplate",
   "tables",
   "treasureparcels",
 };
@@ -498,6 +505,9 @@ function processRecordLocking(sParams,nLock)
   local sRecordName = sParams:lower();
   if sRecordName == "all" then
 --Debug.console("manager_author_adnd.lua","processRecordLocking","Locking1: ",sRecordName);
+    --local aRecords = LibraryData.getRecordTypes();
+--Debug.console("manager_author_adnd.lua","processRecordLocking","aRecords",aRecords);    
+    --for _, sRecord in pairs(aRecords) do
     for _, sRecord in pairs(aDefaultLockAll) do
       editLockRecords(sRecord,nLock);
     end
@@ -514,27 +524,42 @@ function editLockRecords(sRecord,nLock)
     nLockCount = nLockCount + 1;
     DB.setValue(nodeLock,"locked","number",nLock);
 
-    -- lock npc weapon quicknote for 2E npcs
-    if sRecord == "npc" and sRulesetName == "2E" then
-      -- lock powers
-      lockSubRecords(nodeLock, "powers",nLock);
-      -- lock npc ability quicknote for 2E npcs
-      lockSubRecords(nodeLock, "abilitynoteslist",nLock);
+    -- 2E only processes
+    if sRulesetName == "2E" then
+      -- lock npc weapon quicknote for 2E npcs
+      if sRecord == "npc" then
+        -- lock powers
+        lockSubRecords(nodeLock, "powers",nLock);
+        -- lock npc ability quicknote for 2E npcs
+        lockSubRecords(nodeLock, "abilitynoteslist",nLock);
+        
+        for _,nodeItemNote in pairs(DB.getChildren(nodeLock.getPath() .. ".weaponlist")) do
+          local sClass, sRecord = DB.getValue(nodeItemNote,"shortcut","","");
+          if (sClass == "quicknote") then
+            DB.setValue(nodeItemNote,"itemnote.locked","number",nLock);
+          end
+        end -- for
+        -- npc
+      elseif (sRecord == "class") then
+        lockSubRecords(nodeLock, "advancement", nLock);
+        lockSubRecords(nodeLock, "features", nLock);
+        lockSubRecords(nodeLock, "nonweaponprof", nLock);
+        lockSubRecords(nodeLock, "proficiencies", nLock);
+        lockSubRecords(nodeLock, "abilities", nLock);
+      end -- class
       
-      for _,nodeItemNote in pairs(DB.getChildren(nodeLock.getPath() .. ".weaponlist")) do
-        local sClass, sRecord = DB.getValue(nodeItemNote,"shortcut","","");
-        if (sClass == "quicknote") then
-          DB.setValue(nodeItemNote,"itemnote.locked","number",nLock);
-        end
-      end
-    end -- quicknotes
+    end -- 2e
     
     --Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
   end -- record for
   local sLockedText = "locked";
   if nLock == 0 then sLockedText = "unlocked"; end;
-  
-  ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecord .. ".");  
+  local sRecordDisplayName = LibraryData.getDisplayText(sRecord)
+  if (not sRecordDisplayName or sRecordDisplayName == "") then
+    sRecordDisplayName = sRecord;
+  end
+--Debug.console("manager_author_adnd.lua","lockRecord","sRecordDisplayName",sRecordDisplayName);  
+  ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");  
 end
 
 -- called for sub records that also need to be locked.

@@ -209,4 +209,25 @@
     </note_author_header>
   </sheetdata>
   </windowclass>
+  
+<!--   <windowclass name="note" merge="join" >
+    <sheetdata>
+      <sub_note_header_orig name="header" merge="replace">
+        <class>note_header</class>
+      </sub_note_header_orig>
+    </sheetdata>
+  </windowclass>
+  
+	<template name="sub_note_header_orig">
+		<subwindow>
+			<anchored>
+				<top offset="23" />
+				<left offset="15" />
+				<right offset="-15" />
+			</anchored>
+			<activate />
+			<fastinit />
+		</subwindow>
+	</template>   -->
+  
 </root>
