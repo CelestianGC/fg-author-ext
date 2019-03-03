@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>4.4</version>
+		<version>4.5</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 4.4.\rby Celestian, 2017-2019\r---\r/[un]lock records [all|name] - un/locks object records.\r/addtokens - Adds Letter tokens to NPCs missing tokens.\r---" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 4.5.\rby Celestian, 2017-2019\r---\r/[un]lock records [all|name] - un/locks object records.\r/addtokens - Adds Letter tokens to NPCs missing tokens.\r---" font="emotefont"/>
 
 	<base>		
     <!-- Author requirements -->
