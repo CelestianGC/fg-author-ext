@@ -208,7 +208,8 @@ function performRefIndexBuild(list)
             if sIndentSpace then 
               nIndentSpace = string.len(sIndentSpace) or 1;
             end
-            sCleanEntry = StringManager.trim(sCleanEntry);
+            sCleanEntry = StringManager.trim(sCleanEntry);  -- trim leading/ending spaces
+            sCleanEntry = sCleanEntry:gsub("^[_%t]+","");   -- remove leading _'s or tabs(no they can't exist right now)
             sNodeName = sCleanEntry;
             local nodeRefPage = DB.createChild(dRefPages);
             DB.setValue(nodeRefPage,"name","string",sNodeName);
