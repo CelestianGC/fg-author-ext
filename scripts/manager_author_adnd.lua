@@ -9,7 +9,9 @@ function onInit()
     Comm.registerSlashHandler("lockrecords", processRecordLock);
     Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
     --
-    Comm.registerSlashHandler("addtokens", addTokensIfMissing);
+    Comm.registerSlashHandler("addtokens", addMissingTokens);
+    Comm.registerSlashHandler("addnpctokens", addMissingNPCTokens);
+    Comm.registerSlashHandler("addbattletokens", addMissingBattleTokens);
     --
     local sVersionRequired = "3.3.6";
     local sMajor,sMinor,sPoint = Interface.getVersion();
@@ -570,8 +572,26 @@ function lockSubRecords(nodeLock, sRecord, nLock)
   end
 end
 
+-- add missing tokens to npcs and battle/encounters
+function addMissingTokens(sCommand, sParams)
+  local bForceSet = (sParams:lower() == "force-set");
+Debug.console("manager_author_adnd.lua","addMissingTokens","Is ForceSet?",bForceSet);     
+  addTokensIfMissing(bForceSet);
+  addTokensIfMissingFromEncounters(bForceSet);
+end
+-- add missing tokens to npcs 
+function addMissingNPCTokens(sCommand, sParams)
+  local bForceSet = (sParams:lower() == "force-set");
+  addTokensIfMissing(bForceSet)
+end
+-- add missing tokens to battle/encounters
+function addMissingBattleTokens(sCommand, sParams)
+  local bForceSet = (sParams:lower() == "force-set");
+  addTokensIfMissingFromEncounters(bForceSet)
+end
+
 -- add letter tokens to npcs if they are missing one
-function addTokensIfMissing()
+function addTokensIfMissing(bForceSet)
   local nCount = 0;
 --<token type="token">tokens/Medium/a.png@Letter Tokens</token>
   for _,nodeNPC in pairs(DB.getChildren("npc")) do
@@ -580,7 +600,7 @@ function addTokensIfMissing()
 --Debug.console("manager_author_adnd.lua","addTokensIfMissing","sName",sName);      
 --Debug.console("manager_author_adnd.lua","addTokensIfMissing","tToken",tToken);      
     local sToken = nil;
-    if (not tToken or tToken == "") then
+    if (not tToken or tToken == "" or bForceSet) then
       nCount = nCount + 1;
       local sFirstLetter = StringManager.trim(sName):match("^([a-zA-Z])");
       if sFirstLetter then
@@ -588,9 +608,42 @@ function addTokensIfMissing()
       else
         sToken = "tokens/Medium/z.png@Letter Tokens";
       end
---Debug.console("manager_author_adnd.lua","addTokensIfMissing","sToken",sToken);      
+      Debug.console("manager_author_adnd.lua","addNPCTokens","Adding Token:",sToken);       
       DB.setValue(nodeNPC, "token", "token", sToken);
     end
   end
   ChatManager.SystemMessage("AUTHOR: Added letter token to " .. nCount .. " npcs.");  
+end
+
+-- add letter tokens to encounters if they are missing one
+function addTokensIfMissingFromEncounters(bForceSet)
+  local nCount = 0;
+  for _,nodeBattle in pairs(DB.getChildren("battle")) do
+    for _,nodeEncounterNPC in pairs(DB.getChildren(nodeBattle,"npclist")) do
+      local _, sRecord = DB.getValue(nodeEncounterNPC,"link","","");
+      local nodeSource = DB.findNode(sRecord);
+      local sNameOriginal = DB.getValue(nodeSource,"name","");
+      local sName = DB.getValue(nodeEncounterNPC,"name","");
+      local tToken = DB.getValue(nodeEncounterNPC,"token","");
+
+      if (sName == "") then -- if they did not rename the creature
+        sName = sNameOriginal;
+      end
+      
+      local sToken = nil;
+      if (not tToken or tToken == "" or bForceSet) then
+        nCount = nCount + 1;
+        local sFirstLetter = StringManager.trim(sName):match("^([a-zA-Z])");
+        if sFirstLetter then
+          sToken = "tokens/Medium/" .. sFirstLetter:lower() .. ".png@Letter Tokens";
+        else
+          sToken = "tokens/Medium/z.png@Letter Tokens";
+        end
+        Debug.console("manager_author_adnd.lua","addBattleTokens","Adding Token:",sToken);           
+        DB.setValue(nodeEncounterNPC, "token", "token", sToken);
+      end
+      
+    end -- end list of nodeEncounterNPC
+  end -- end list of nodeBattle
+  ChatManager.SystemMessage("AUTHOR: Added letter token to " .. nCount .. " battle/encounters.");  
 end
