@@ -220,4 +220,131 @@
   </sheetdata>
   </windowclass>
   
+  <!-- template for the bulk chapter/story stub creations aGMEditButtons -->
+  <template name="button_story_bulkstubs">
+    <buttoncontrol insertbefore="filter_sharedonly">
+      <anchored to="rightanchor" width="20" height="20">
+        <top />
+        <right anchor="left" relation="relative" offset="-5" />
+      </anchored>
+      <icon normal="button_bulk_add" pressed="button_bulk_add_down" />
+      <tooltip textres="story_bulk_stubs_tooltip" />
+      <script>
+        function onButtonPress()
+          if User.isHost() then
+            Interface.openWindow("story_bulk_stubs_window", "");
+          end
+        end
+      </script>
+      <invisible />
+    </buttoncontrol>
+  </template>
+  
+  <!-- popup window for story/chapter bulk creation data -->
+  <windowclass name="story_bulk_stubs_window" >
+    <frame>recordsheet</frame>
+    <placement>
+      <size width="200" height="250" />
+    </placement>
+    <sizelimits>
+      <minimum width="150" height="250" />
+      <dynamic />
+    </sizelimits>
+    <minimize>minimized_item</minimize>
+    <script file="campaign/scripts/story_bulk_stubs.lua" />
+    <sheetdata>
+
+			<genericcontrol name="columnanchor">
+				<anchored position="insidetop" offset="0,30" height="0"/>
+				<disabled />
+				<invisible />
+			</genericcontrol>
+
+      <label name="header">
+        <anchored width="90">
+          <top offset="10" />
+          <left anchor="center" offset="-40"/>
+        </anchored>
+        <static text="Bulk Creation" />
+      </label>
+      
+      <header_column name="header_chapter_stubs">
+        <static text="Chapter" />
+        <center />
+      </header_column>
+
+      <label_column name="chapter_count">
+        <anchored>
+          <top parent="columnanchor" anchor="bottom" relation="current" offset="7" />
+          <left offset="20"/>
+        </anchored>
+        <static text="Count:" />
+        <tooltip text="Number of blank chapter entries to create." />
+      </label_column>
+      <number_column name="chaptercount"  >
+        <default>1</default>
+      </number_column>
+      <label_column name="chapter_start">
+        <anchored>
+          <top parent="columnanchor" anchor="bottom" relation="current" offset="7" />
+          <left offset="20"/>
+        </anchored>
+        <static text="Start#:" />
+        <tooltip text="The first number to use for creation of stubs." />
+      </label_column>
+      <number_column name="chapterstart" >
+        <default>1</default>
+      </number_column>
+
+      <header_column name="header_story_stubs">
+        <static text="Story" />
+        <center />
+      </header_column>
+      <label_column name="story_count">
+        <anchored>
+          <top parent="columnanchor" anchor="bottom" relation="current" offset="7" />
+          <left offset="20"/>
+        </anchored>
+        <static text="Count:" />
+        <tooltip text="Number of blank story entries to create." />
+      </label_column>
+      <number_column name="storycount"  >
+        <default>1</default>
+      </number_column>
+      <label_column name="story_start">
+        <anchored>
+          <top parent="columnanchor" anchor="bottom" relation="current" offset="7" />
+          <left offset="20"/>
+        </anchored>
+        <static text="Start#:" />
+        <tooltip text="The first number to use for creation of stubs." />
+      </label_column>
+      <number_column name="storystart" >
+        <default>1</default>
+      </number_column>
+
+      <button_text_sm>
+        <script>
+          function onButtonPress()
+            window.processBulkCreations();
+            window.close();
+          end
+        </script>
+        <anchored width="70">
+          <top anchor="bottom" relation="relative" offset="-40" />
+          <left anchor="center" offset="-35"/>
+        </anchored>
+        <state text="SUBMIT" />
+      </button_text_sm>
+
+      <resize_recordsheet />
+      <close>
+        <anchored>
+          <top offset="10" />
+          <right offset="-8" />
+        </anchored>
+      </close>
+    </sheetdata>
+  </windowclass>
+
 </root>

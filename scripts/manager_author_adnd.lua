@@ -4,7 +4,11 @@
 aBlockFrames = {};
 
 function onInit()
+--Debug.console("manager_author_adnd.lua","onInit","aStoryRecordInfo2",aStoryRecordInfo);  
 	if User.isHost() then
+    
+    updateRecordTypeInfo();
+    
     -- to lock/unlock records
     Comm.registerSlashHandler("lockrecords", processRecordLock);
     Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
@@ -41,6 +45,17 @@ function onInit()
       -- CoreRPG_Version_Miss_Match_For_AUTHOR.causeAlert = nVersion;
     end
   end
+end
+
+-- add in the button_story_bulkstubs
+function updateRecordTypeInfo()
+  local aStoryRecordInfo = LibraryData.getRecordTypeInfo('story');
+  if aStoryRecordInfo.aGMEditButtons == nil then
+    aStoryRecordInfo.aGMEditButtons = {};
+  end
+  table.insert(aStoryRecordInfo.aGMEditButtons,'button_story_bulkstubs');
+  LibraryData.overrideRecordTypeInfo('story', aStoryRecordInfo)
+  aStoryRecordInfo = LibraryData.getRecordTypeInfo('story');
 end
 
 -- run custom process function(s) at the begining of an export passing it the "list" control
@@ -138,6 +153,7 @@ function performRefIndexBuild(list)
         -- used for ordering. Might need to revisit this in the future... --celestian
         local sHiddenName = DB.getValue(nodeHidden,"name","");
         DB.setValue(nodeHidden,"name","string",StringManager.trim(stripLeadingNumbers(sHiddenName)));
+        DB.setValue(nodeHidden,"locked","number",1);
         --
       end
     end
@@ -215,7 +231,9 @@ function performRefIndexBuild(list)
             sNodeName = sCleanEntry;
             local nodeRefPage = DB.createChild(dRefPages);
             DB.setValue(nodeRefPage,"name","string",sNodeName);
-            DB.setValue(nodeRefPage,"keywords","string",CleanUpKeywords(sNodeName));
+            
+            local sKeywords = CleanUpKeywords(removeDuplicateWords(sNodeName .. " " .. sNoteText));
+            DB.setValue(nodeRefPage,"keywords","string",sKeywords);
             -- if indent space is more than 1 we add it (we assume we have 1 space between the leading number and the name)
             if (nIndentSpace > 1) then
               DB.setValue(nodeRefPage,"indent","number",nIndentSpace);
@@ -415,23 +433,34 @@ end
 function CleanUpKeywords(sText)
   local sCleanedText = sText;
   local textMatches = {
-    'a',
     'and',
-    'or',
+    'more',
+    'must',
+    'mine',
     'the',
     'then',
     'that',
-    'am',
-    'is',
     'are',
     'was',
     'were',
-    'at',
-    'it',
+    'well',
+    'what',
+    'where',
+    'this',
+    'that',
+    'other',
+    'left',
+    'right',
+    'old',
+    'new',
+    'well',
+    'good',
+    'bad',
     'thier',
     'their',
+    'fore',
+    'from',
     'for',
-    'of',
     'another',
   };
   for _, sFind in ipairs(textMatches) do
@@ -439,11 +468,21 @@ function CleanUpKeywords(sText)
     sCleanedText = sCleanedText:gsub("[%s]+" .. nocase(sFind) .. " "," "); -- remove and replace with a space
   end
   sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
-  sCleanedText = sCleanedText:gsub(" [a-zA-Z] ","");  -- remove single letters surrounded by space
+  sCleanedText = sCleanedText:gsub(" [a-zA-Z] "," ");  -- remove single letters surrounded by space
+  sCleanedText = sCleanedText:gsub(" %w%w "," ");  -- remove 2 letter surrounded by space
   sCleanedText = sCleanedText:gsub("%s%s+"," ");         -- remove double+ spacing if it's there
   sCleanedText = StringManager.trim(sCleanedText);    -- clean up ends
   sCleanedText = string.lower(sCleanedText);
   return sCleanedText;
+end
+
+-- remove repeating words in a block of text
+function removeDuplicateWords(sText)
+  local out = " ";
+  for s in sText:gmatch("%w+") do
+    if not out:find(s) then out = out .. " " .. s end
+  end
+  return out;
 end
 
 -- remove leading \d+ and punctuation on text and return it

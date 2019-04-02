@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>4.7</version>
+		<version>4.9</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 4.7.\rby Celestian, 2017-2019\r---\r/[un]lock records [all|name] - un/locks object records.\r/addtokens (force-set) - Adds Letter tokens to NPCs and Battles missing tokens.\r/addnpctokens (force-set) - Adds Letter tokens to NPCs missing tokens.\r/addbattletokens (force-set) - Adds Letter tokens to Battles missing tokens.\r---" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 4.9.\rby Celestian, 2017-2019\r---\r/[un]lock records [all|name] - un/locks object records.\r/addtokens (force-set) - Adds Letter tokens to NPCs and Battles missing tokens.\r/addnpctokens (force-set) - Adds Letter tokens to NPCs missing tokens.\r/addbattletokens (force-set) - Adds Letter tokens to Battles missing tokens.\r---" font="emotefont"/>
 
 	<base>		
     <!-- Author requirements -->
@@ -29,6 +29,10 @@
     <string name="AUTHOR_Label_FrameSelect_Forward">Next Frame</string>
     <string name="AUTHOR_Label_FrameSelect_Back">Previous Frame</string>    
     <string name="AUTHOR_Label_FrameGlobalDefault">When exporting, set this frame as the default for all Stories without a frame set.</string> 
+    
+    <string name="story_bulk_stubs_tooltip">Bulk create chapters(groups) and story stubs.</string>
+    <icon name="button_bulk_add" file="graphics/buttons/button_statpointmode.png" />
+    <icon name="button_bulk_add_down" file="graphics/buttons/button_statpointmode_down.png" />
     
   </base>
     
