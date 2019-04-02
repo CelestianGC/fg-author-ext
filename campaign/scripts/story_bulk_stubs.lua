@@ -10,9 +10,9 @@ function processBulkCreations()
   local nChapterStart = chapterstart.getValue() or 0;
   local nStoryStart = storystart.getValue() or 0;
 
-  for nChapter = nChapterStart, nChapterCount do
+  for nChapter = nChapterStart, nChapterStart+nChapterCount-1 do
     local sChapterString = string.format("%02d",nChapter);
-    for nStory = nStoryStart, nStoryCount do
+    for nStory = nStoryStart, nStoryStart+nStoryCount-1 do
       local nodeStory = DB.createChild('encounter');
       local sStoryString = string.format("%03d",nStory);
 Debug.console("story_bulk_stubs.lua","processBulkCreations","Chapter.Story: ",sChapterString .. "." .. sStoryString);  
