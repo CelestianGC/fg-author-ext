@@ -9,15 +9,20 @@ function processBulkCreations()
   local nStoryCount = storycount.getValue() or 0;
   local nChapterStart = chapterstart.getValue() or 0;
   local nStoryStart = storystart.getValue() or 0;
+  local bIncludeChapter = (storyincludechapter.getValue() == 0)
 
   for nChapter = nChapterStart, nChapterStart+nChapterCount-1 do
-    local sChapterString = string.format("%02d",nChapter);
+    local sChapterID = string.format("%02d",nChapter);
     for nStory = nStoryStart, nStoryStart+nStoryCount-1 do
       local nodeStory = DB.createChild('encounter');
-      local sStoryString = string.format("%03d",nStory);
-Debug.console("story_bulk_stubs.lua","processBulkCreations","Chapter.Story: ",sChapterString .. "." .. sStoryString);  
-      DB.setValue(nodeStory,"name","string",sChapterString .. "." .. sStoryString);
-      DB.setCategory(nodeStory, sChapterString);
+      local sStoryID = string.format("%03d",nStory);
+      local sStoryString = sChapterID .. "." .. sStoryID;
+      if not bIncludeChapter then
+        sStoryString = sStoryID;
+      end
+Debug.console("story_bulk_stubs.lua","processBulkCreations","Chapter.Story: ",sChapterID .. "." .. sStoryString);  
+      DB.setValue(nodeStory,"name","string",sStoryString);
+      DB.setCategory(nodeStory, sChapterID);
     end
   end
 

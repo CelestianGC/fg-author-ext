@@ -247,7 +247,7 @@
       <size width="200" height="250" />
     </placement>
     <sizelimits>
-      <minimum width="150" height="250" />
+      <minimum width="170" height="250" />
       <dynamic />
     </sizelimits>
     <minimize>minimized_item</minimize>
@@ -322,7 +322,11 @@
       <number_column name="storystart" >
         <default>1</default>
       </number_column>
-
+      <button_checkbox name="storyincludechapter">
+        <anchored to="storystart" position="right" offset="5,0" width="10" />
+        <tooltip text="Do not include current chapter number in story name '000'." />
+      </button_checkbox>
+      
       <button_text_sm>
         <script>
           function onButtonPress()
