@@ -588,6 +588,10 @@ function editLockRecords(sRecord,nLock)
         lockSubRecords(nodeLock, "nonweaponprof", nLock);
         lockSubRecords(nodeLock, "proficiencies", nLock);
         lockSubRecords(nodeLock, "abilities", nLock);
+      elseif (sRecord == "background") then
+        lockSubRecords(nodeLock, "advancement", nLock);
+        lockSubRecords(nodeLock, "features", nLock);
+        lockSubRecords(nodeLock, "proficiencies", nLock);
       end -- class
       
     end -- 2e
