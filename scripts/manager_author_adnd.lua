@@ -2,6 +2,7 @@
 --
 --
 aBlockFrames = {};
+nAllLocked = 0;
 
 function onInit()
 --Debug.console("manager_author_adnd.lua","onInit","aStoryRecordInfo2",aStoryRecordInfo);  
@@ -536,11 +537,15 @@ local aDefaultLockAll = {
 };
 -- process unlocks
 function processRecordUnLock(sCommand, sParams)
+  nAllLocked = 0;
   processRecordLocking(sParams:lower(),0);
+  ChatManager.SystemMessage("AUTHOR: unlocked " .. nAllLocked .. " records.");  
 end
 -- Search through param passed record and set it locked.
 function processRecordLock(sCommand, sParams)
+  nAllLocked = 0;
   processRecordLocking(sParams:lower(),1);
+  ChatManager.SystemMessage("AUTHOR: locked " .. nAllLocked .. " records.");  
 end
 -- general locking function, take name and whether should lock or not
 function processRecordLocking(sParams,nLock)
@@ -565,36 +570,53 @@ function editLockRecords(sRecord,nLock)
   for _,nodeLock in pairs(DB.getChildren(sRecord)) do
     nLockCount = nLockCount + 1;
     DB.setValue(nodeLock,"locked","number",nLock);
-
+Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
     -- 2E only processes
     if sRulesetName == "2E" then
       -- lock npc weapon quicknote for 2E npcs
       if sRecord == "npc" then
-        -- lock powers
-        lockSubRecords(nodeLock, "powers",nLock);
-        -- lock npc ability quicknote for 2E npcs
-        lockSubRecords(nodeLock, "abilitynoteslist",nLock);
-        
-        for _,nodeItemNote in pairs(DB.getChildren(nodeLock.getPath() .. ".weaponlist")) do
-          local sClass, sRecord = DB.getValue(nodeItemNote,"shortcut","","");
-          if (sClass == "quicknote") then
-            DB.setValue(nodeItemNote,"itemnote.locked","number",nLock);
-          end
-        end -- for
-        -- npc
+        editLockRecords(nodeLock.getPath() .. "." .. "powers",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "abilitynoteslist",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "weaponlist",nLock);
+      elseif (sRecord:match('weaponlist')) then -- lock weapon quicknotes
+        local sClass, _ = DB.getValue(nodeLock,"shortcut","","");
+        if (sClass == "quicknote") then
+          DB.setValue(nodeLock,"itemnote.locked","number",nLock);
+        end
+        local sQuickNoteName = DB.getValue(nodeLock,"itemnote.name");
+        if (sQuickNoteName) then
+          DB.setValue(nodeLock,"itemnote.locked","number",nLock);
+        end
+      elseif (sRecord == 'item') then
+        editLockRecords(nodeLock.getPath() .. "." .. "weaponlist",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "powers",nLock);
       elseif (sRecord == "class") then
-        lockSubRecords(nodeLock, "advancement", nLock);
-        lockSubRecords(nodeLock, "features", nLock);
-        lockSubRecords(nodeLock, "nonweaponprof", nLock);
-        lockSubRecords(nodeLock, "proficiencies", nLock);
-        lockSubRecords(nodeLock, "abilities", nLock);
+        -- use this instead?
+        editLockRecords(nodeLock.getPath() .. "." .. "advancement",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "nonweaponprof",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "proficiencies",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "abilities",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "powers",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "skill",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "weaponlist",nLock);
       elseif (sRecord == "background") then
-        lockSubRecords(nodeLock, "advancement", nLock);
-        lockSubRecords(nodeLock, "features", nLock);
-        lockSubRecords(nodeLock, "proficiencies", nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "nonweaponprof",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "proficiencies",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "powers",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "skill",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "weaponlist",nLock);
       end -- class
-      
-    end -- 2e
+    
+    -- 5e
+    elseif sRulesetName == "5E" then
+      if (sRecord == "class") then
+        editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
+      elseif (sRecord == "background") then
+        editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
+      end -- 
+    end
     
     --Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
   end -- record for
@@ -604,15 +626,10 @@ function editLockRecords(sRecord,nLock)
   if (not sRecordDisplayName or sRecordDisplayName == "") then
     sRecordDisplayName = sRecord;
   end
+  nAllLocked = nLockCount + nAllLocked;
 --Debug.console("manager_author_adnd.lua","lockRecord","sRecordDisplayName",sRecordDisplayName);  
-  ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");  
-end
-
--- called for sub records that also need to be locked.
-function lockSubRecords(nodeLock, sRecord, nLock)
-  for _,nodeSubLock in pairs(DB.getChildren(nodeLock.getPath() .. "." .. sRecord)) do
-      DB.setValue(nodeSubLock,"locked","number",nLock);
-  end
+  --ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");  
+  Debug.console("manager_author_adnd.lua","editLockRecords():","AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");
 end
 
 -- add missing tokens to npcs and battle/encounters
