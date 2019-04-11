@@ -358,7 +358,7 @@ function createBlockImage(dBlocks,sText,sFrame)
     end
     -- if the size changed, tag it with full size image pixels
     if (nXOriginal ~= nX or nYOriginal ~= nY) then
-      -- remove the size of image addition --celestian
+      -- removed the size of image caption --celestian
       --sImageCaption = sImageCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
     end
     DB.setValue(nodeBlock,"caption","string",sImageCaption);
@@ -372,6 +372,20 @@ function createBlockImage(dBlocks,sText,sFrame)
     -- </imagelink>
     DB.setValue(nodeBlock,"imagelink","windowreference","imagewindow",sImageNode);
   end
+end
+
+-- this will make sure the image is no bigger than 500x500 and try to keep
+-- the scale/size portions correct
+function getAdjustedImageSize(win,image)
+  local SMALL_WIDTH = 500;
+  local SMALL_HEIGHT = 500;
+  local nX,nY = image.getImageSize();
+  if (nX > SMALL_WIDTH or nY > SMALL_HEIGHT) then
+    local nNewScale = math.min(SMALL_WIDTH/nX,SMALL_HEIGHT/nY);
+    nX = math.floor(nX * nNewScale);
+    nY = math.floor(nY * nNewScale);
+  end
+  return nX,nY;
 end
 
 -- this checks to see if the string is valid to be written to refmanual-block. Sometimes get get a black line or empty cause of
@@ -397,20 +411,6 @@ function stripFormattedText(sText)
   sTextOnly = sTextOnly:gsub("<.?list>","");
   sTextOnly = sTextOnly:gsub("<.?li>","");
   return sTextOnly;  
-end
-
--- this will make sure the image is no bigger than 500x500 and try to keep
--- the scale/size portions correct
-function getAdjustedImageSize(win,image)
-  local SMALL_WIDTH = 500;
-  local SMALL_HEIGHT = 500;
-  local nX,nY = image.getImageSize();
-  if (nX > SMALL_WIDTH or nY > SMALL_HEIGHT) then
-    local nNewScale = math.min(SMALL_WIDTH/nX,SMALL_HEIGHT/nY);
-    nX = math.floor(nX * nNewScale);
-    nY = math.floor(nY * nNewScale);
-  end
-  return nX,nY;
 end
 
 -- generate ignore case patterns from string passed
@@ -469,10 +469,10 @@ function CleanUpKeywords(sText)
     sCleanedText = sCleanedText:gsub("[%s]+" .. nocase(sFind) .. " "," "); -- remove and replace with a space
   end
   sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
-  sCleanedText = sCleanedText:gsub(" [a-zA-Z] "," ");  -- remove single letters surrounded by space
-  sCleanedText = sCleanedText:gsub(" %w%w "," ");  -- remove 2 letter surrounded by space
-  sCleanedText = sCleanedText:gsub("%s%s+"," ");         -- remove double+ spacing if it's there
-  sCleanedText = StringManager.trim(sCleanedText);    -- clean up ends
+  sCleanedText = sCleanedText:gsub(" [a-zA-Z] "," ");                -- remove single letters surrounded by space
+  sCleanedText = sCleanedText:gsub(" %w%w "," ");                    -- remove 2 letter surrounded by space
+  sCleanedText = sCleanedText:gsub("%s%s+"," ");                     -- remove double+ spacing if it's there
+  sCleanedText = StringManager.trim(sCleanedText);                   -- clean up ends
   sCleanedText = string.lower(sCleanedText);
   return sCleanedText;
 end
@@ -513,28 +513,29 @@ function sortStoriesByName(aStories)
 end
 
 
--- default record list for "all" lock/unlock
-local aDefaultLockAll = {
-  "background",
-  "battle",
-  "battlerandom",
-  "class",
-  "effects",
-  "encounter",
-  "image",
-  "item",
-  "modifiers",
-  "notes",
-  "npc",
-  "quest",
-  "race",
-  "skill",
-  "spell",
-  "story",
-  "storytemplate",
-  "tables",
-  "treasureparcels",
-};
+-- -- default record list for "all" lock/unlock
+-- local aDefaultLockAll = {
+  -- "background",
+  -- "battle",
+  -- "battlerandom",
+  -- "class",
+  -- "effects",
+  -- "encounter",
+  -- "feat",
+  -- "image",
+  -- "item",
+  -- "modifiers",
+  -- "notes",
+  -- "npc",
+  -- "quest",
+  -- "race",
+  -- "skill",
+  -- "spell",
+  -- "story",
+  -- "storytemplate",
+  -- "tables",
+  -- "treasureparcels",
+-- };
 -- process unlocks
 function processRecordUnLock(sCommand, sParams)
   nAllLocked = 0;
@@ -551,9 +552,14 @@ end
 function processRecordLocking(sParams,nLock)
   local sRecordName = sParams:lower();
   if sRecordName == "all" then
+    local aDefaultLockAll = {};
 --Debug.console("manager_author_adnd.lua","processRecordLocking","Locking1: ",sRecordName);
-    --local aRecords = LibraryData.getRecordTypes();
---Debug.console("manager_author_adnd.lua","processRecordLocking","aRecords",aRecords);    
+    local aRecords = LibraryData.getRecordTypes();
+    
+    for _, sRecord in pairs(aRecords) do
+      local sInfo = LibraryData.getRecordTypeInfo(sRecord);
+      table.insert(aDefaultLockAll,sInfo.aDataMap[1]);
+    end
     --for _, sRecord in pairs(aRecords) do
     for _, sRecord in pairs(aDefaultLockAll) do
       editLockRecords(sRecord,nLock);
@@ -628,7 +634,10 @@ Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
   end
   nAllLocked = nLockCount + nAllLocked;
 --Debug.console("manager_author_adnd.lua","lockRecord","sRecordDisplayName",sRecordDisplayName);  
-  --ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");  
+  if (not sRecord:match("%.id%-%d+")) then
+    ChatManager.SystemMessage("AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");  
+  end
+  
   Debug.console("manager_author_adnd.lua","editLockRecords():","AUTHOR: " .. sLockedText .. " " .. nLockCount .. " entries for ".. sRecordDisplayName .. " (type: " .. sRecord .. ")" .. ".");
 end
 
