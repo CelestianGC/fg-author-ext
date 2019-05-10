@@ -233,7 +233,13 @@ function performRefIndexBuild(list)
             local nodeRefPage = DB.createChild(dRefPages);
             DB.setValue(nodeRefPage,"name","string",sNodeName);
             
-            local sKeywords = CleanUpKeywords(removeDuplicateWords(sNodeName .. " " .. sNoteText));
+            -- clean up keywords for searching
+            local sKeywordBody = stripFormattedText(sNoteText);
+            local sKeywords = CleanUpKeywords(sKeywordBody);
+            local sKeywordsFromName = CleanUpKeywords(sNodeName);
+            sKeywords = removeDuplicateWords(sKeywordsFromName .. " " .. sKeywords);
+            sKeywords = StringManager.trim(sKeywords);
+            ---
             DB.setValue(nodeRefPage,"keywords","string",sKeywords);
             -- if indent space is more than 1 we add it (we assume we have 1 space between the leading number and the name)
             if (nIndentSpace > 1) then
@@ -403,7 +409,7 @@ end
 -- strip out formattedtext from a string
 function stripFormattedText(sText)
   local sTextOnly = sText;
-  sTextOnly = sTextOnly:gsub("</p>","\n");
+  --sTextOnly = sTextOnly:gsub("</p>","\n");
   sTextOnly = sTextOnly:gsub("<.?[ubiphUBIPH]>","");
   sTextOnly = sTextOnly:gsub("<.?table>","");
   sTextOnly = sTextOnly:gsub("<.?frame>","");
@@ -433,47 +439,60 @@ end
 -- so that the search works a little better
 function CleanUpKeywords(sText)
   local sCleanedText = sText;
-  local textMatches = {
-    'and',
-    'more',
-    'must',
-    'mine',
-    'the',
-    'then',
-    'that',
-    'are',
-    'was',
-    'were',
-    'well',
-    'what',
-    'where',
-    'this',
-    'that',
-    'other',
-    'left',
-    'right',
-    'old',
-    'new',
-    'well',
-    'good',
-    'bad',
-    'thier',
-    'their',
-    'fore',
-    'from',
-    'for',
-    'another',
-  };
-  for _, sFind in ipairs(textMatches) do
-    sCleanedText = sCleanedText:gsub("^" .. nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
-    sCleanedText = sCleanedText:gsub("[%s]+" .. nocase(sFind) .. " "," "); -- remove and replace with a space
+  if sCleanedText then 
+    local textMatches = {
+      'and',
+      'does',
+      'more',
+      'must',
+      'mine',
+      'the',
+      'then',
+      'that',
+      'are',
+      'was',
+      'were',
+      'well',
+      'what',
+      'where',
+      'this',
+      'that',
+      'other',
+      'left',
+      'right',
+      'but',
+      'old',
+      'td',
+      'or',
+      'of',
+      'no',
+      'its',
+      'new',
+      'not',
+      'most',
+      'has',
+      'been',
+      'well',
+      'good',
+      'bad',
+      'thier',
+      'their',
+      'fore',
+      'from',
+      'for',
+      'another',
+    };
+    for _, sFind in ipairs(textMatches) do
+      sCleanedText = sCleanedText:gsub("^" .. nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
+      sCleanedText = sCleanedText:gsub("[%s]+" .. nocase(sFind) .. " "," "); -- remove and replace with a space
+    end
+    sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
+    sCleanedText = sCleanedText:gsub(" [a-zA-Z] "," ");                -- remove single letters surrounded by space
+    sCleanedText = sCleanedText:gsub(" [a-zA-Z][a-zA-Z] "," ");        -- remove 2 letters surrounded by space
+    sCleanedText = sCleanedText:gsub("%s%s+"," ");                     -- remove double+ spacing if it's there
+    sCleanedText = StringManager.trim(sCleanedText);                   -- clean up ends
+    sCleanedText = string.lower(sCleanedText);
   end
-  sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
-  sCleanedText = sCleanedText:gsub(" [a-zA-Z] "," ");                -- remove single letters surrounded by space
-  sCleanedText = sCleanedText:gsub(" %w%w "," ");                    -- remove 2 letter surrounded by space
-  sCleanedText = sCleanedText:gsub("%s%s+"," ");                     -- remove double+ spacing if it's there
-  sCleanedText = StringManager.trim(sCleanedText);                   -- clean up ends
-  sCleanedText = string.lower(sCleanedText);
   return sCleanedText;
 end
 
