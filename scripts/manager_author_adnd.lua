@@ -638,6 +638,12 @@ Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
     elseif sRulesetName == "5E" then
       if (sRecord == "class") then
         editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "abilities",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "multiclassfeatures",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "multiclassproficiencies",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "proficiencies",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "abilities",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "abilities",nLock);
       elseif (sRecord == "background") then
         editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
       end -- 
