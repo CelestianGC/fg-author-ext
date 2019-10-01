@@ -362,11 +362,11 @@ function createBlockImage(dBlocks,sText,sFrame)
     if (not sImageCaption or sImageCaption == "") then
       sImageCaption = DB.getValue(nodeImage,"name","");
     end
+    -- removed the size of image caption --celestian
     -- if the size changed, tag it with full size image pixels
-    if (nXOriginal ~= nX or nYOriginal ~= nY) then
-      -- removed the size of image caption --celestian
+    --if (nXOriginal ~= nX or nYOriginal ~= nY) then
       --sImageCaption = sImageCaption .. " (" .. nXOriginal .. "x" .. nYOriginal .. ")";
-    end
+    --end
     DB.setValue(nodeBlock,"caption","string",sImageCaption);
     -- <image type="image">
       -- <bitmap>Cavern1 room 2.jpg</bitmap>
@@ -486,6 +486,9 @@ function CleanUpKeywords(sText)
       sCleanedText = sCleanedText:gsub("^" .. nocase(sFind) .. " ","");      -- remove and replace if start of text with nothing
       sCleanedText = sCleanedText:gsub("[%s]+" .. nocase(sFind) .. " "," "); -- remove and replace with a space
     end
+    sCleanedText = sCleanedText:gsub("linklist","");                   -- remove special strings related to FG
+    sCleanedText = sCleanedText:gsub("imagewindow","");                -- remove special strings related to FG
+    sCleanedText = sCleanedText:gsub("recordname","");                 -- remove special strings related to FG
     sCleanedText = sCleanedText:gsub("[%p%(%)%.%%%*%?%[%^%$%]]"," ");  -- remove punctuation/magic characters
     sCleanedText = sCleanedText:gsub(" [a-zA-Z] "," ");                -- remove single letters surrounded by space
     sCleanedText = sCleanedText:gsub(" [a-zA-Z][a-zA-Z] "," ");        -- remove 2 letters surrounded by space
@@ -615,6 +618,11 @@ Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
       elseif (sRecord == 'item') then
         editLockRecords(nodeLock.getPath() .. "." .. "weaponlist",nLock);
         editLockRecords(nodeLock.getPath() .. "." .. "powers",nLock);
+      elseif (sRecord == "race") then
+        editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "nonweaponprof",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "proficiencies",nLock);
+        editLockRecords(nodeLock.getPath() .. "." .. "traits",nLock);
       elseif (sRecord == "class") then
         -- use this instead?
         editLockRecords(nodeLock.getPath() .. "." .. "advancement",nLock);
