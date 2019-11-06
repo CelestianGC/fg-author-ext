@@ -90,13 +90,18 @@ function performExport()
 	aProperties.playervisible = (playervisible.getValue() == 1);
 
 	-- Pre checks
-	if aProperties.name == "" then
+	if (aProperties.name or "") == "" then
 		ChatManager.SystemMessage(Interface.getString("export_error_name"));
 		name.setFocus(true);
 		return;
 	end
-	if aProperties.file == "" then
-		ChatManager.SystemMessage(Interface.getString("export_error_file"));
+	if (aProperties.file or "") == "" then
+		ChatManager.SystemMessage(Interface.getString("export_error_file_empty"));
+		file.setFocus(true);
+		return;
+	end
+	if not ExportManager.isFileNameValid(aProperties.file) then
+		ChatManager.SystemMessage(Interface.getString("export_error_file_invalid"));
 		file.setFocus(true);
 		return;
 	end
