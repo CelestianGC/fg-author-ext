@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>5.00</version>
+		<version>5.01</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 5.00.\rby Celestian, 2017-2019\r---\r/[un]lock records [all|name] - un/locks object records.\r/addtokens (force-set) - Adds Letter tokens to NPCs and Battles missing tokens.\r/addnpctokens (force-set) - Adds Letter tokens to NPCs missing tokens.\r/addbattletokens (force-set) - Adds Letter tokens to Battles missing tokens.\r---" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 5.01.\rby Celestian, 2017-2019\r---\r/[un]lock records [all|name] - un/locks object records.\r/addtokens (force-set) - Adds Letter tokens to NPCs and Battles missing tokens.\r/addnpctokens (force-set) - Adds Letter tokens to NPCs missing tokens.\r/addbattletokens (force-set) - Adds Letter tokens to Battles missing tokens.\r/encounterstats - Display simple encounter stats.\r---" font="emotefont"/>
 
 	<base>		
     <!-- Author requirements -->

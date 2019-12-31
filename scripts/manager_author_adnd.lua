@@ -18,7 +18,10 @@ function onInit()
     Comm.registerSlashHandler("addnpctokens", addMissingNPCTokens);
     Comm.registerSlashHandler("addbattletokens", addMissingBattleTokens);
     --
-    local sVersionRequired = "3.3.6";
+    Comm.registerSlashHandler("encounterstats", calculateEncounters);
+    --
+    
+    local sVersionRequired = "3.3.9";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
     local bVersionOK = (sVersion == sVersionRequired);
@@ -633,6 +636,8 @@ Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
         editLockRecords(nodeLock.getPath() .. "." .. "powers",nLock);
         editLockRecords(nodeLock.getPath() .. "." .. "skill",nLock);
         editLockRecords(nodeLock.getPath() .. "." .. "weaponlist",nLock);
+      elseif (sRecord == "treasureparcels") then
+        editLockRecords(nodeLock.getPath() .. "." .. "itemlist",nLock);
       elseif (sRecord == "background") then
         editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
         editLockRecords(nodeLock.getPath() .. "." .. "nonweaponprof",nLock);
@@ -652,6 +657,8 @@ Debug.console("manager_author_adnd.lua","lockRecord","Locked node:",nodeLock);
         editLockRecords(nodeLock.getPath() .. "." .. "proficiencies",nLock);
         editLockRecords(nodeLock.getPath() .. "." .. "abilities",nLock);
         editLockRecords(nodeLock.getPath() .. "." .. "abilities",nLock);
+      elseif (sRecord == "treasureparcels") then
+        editLockRecords(nodeLock.getPath() .. "." .. "itemlist",nLock);
       elseif (sRecord == "background") then
         editLockRecords(nodeLock.getPath() .. "." .. "features",nLock);
       end -- 
@@ -748,4 +755,91 @@ function addTokensIfMissingFromEncounters(bForceSet)
     end -- end list of nodeEncounterNPC
   end -- end list of nodeBattle
   ChatManager.SystemMessage("AUTHOR: Added letter token to " .. nCount .. " battle/encounters.");  
+end
+
+-- count up all the encounters, cr and experience totals for a report.
+function calculateEncounters()
+  local nTotalEXP = 0;
+  local nTotalCR = 0;
+  local fAverageCR = 0;
+  local nTotalEncounters = 0;
+  for _,nodeEnc in pairs(DB.getChildren("battle")) do
+    nTotalEncounters = nTotalEncounters + 1;
+    nTotalEXP = nTotalEXP + DB.getValue(nodeEnc,"exp",0);
+    local sCR = DB.getValue(nodeEnc, "cr", "");
+    nTotalCR = nTotalCR + tonumber(sCR:match("^%d+$") or 0);
+  end
+  if nTotalCR ~= 0 and nTotalEncounters ~= 0 then
+    fAverageCR = nTotalCR/nTotalEncounters;
+  end
+  local sRulesetName = User.getRulesetName();
+  if sRulesetName == "2E" then
+    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP);  
+    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP);  
+  else
+    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."");  
+    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."");  
+  end
+  local sMessage = "";
+  for sName,nCount in pairs(calculateTreasureCoins()) do
+    if sName ~= "" then
+      sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
+    end
+  end
+  ChatManager.SystemMessage("AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
+  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
+  sMessage = "";
+  for sName,nCount in pairs(calculateTreasureItems()) do
+    if sName ~= "" then
+      sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
+    end
+  end
+  ChatManager.SystemMessage("AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
+  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
+end
+
+function calculateTreasureCoins()
+  local aCoins ={};
+  for _,nodeParcel in pairs(DB.getChildren("treasureparcels")) do
+      local sNameParcel = DB.getValue(nodeParcel, "name", "");    
+    for _,nodeCoin in pairs(DB.getChildren(nodeParcel, "coinlist")) do
+      local sCurrency = DB.getValue(nodeCoin, "description", "");
+      sCurrency = sCurrency:upper();
+      local nCurrency = DB.getValue(nodeCoin, "amount", 0);
+      if aCoins[sCurrency] then
+        aCoins[sCurrency] = aCoins[sCurrency] + nCurrency;
+      else
+        aCoins[sCurrency] = nCurrency;
+      end
+    end
+  end
+  return aCoins;
+end
+
+function calculateTreasureItems()
+  local aCoins ={};
+  for _,nodeParcel in pairs(DB.getChildren("treasureparcels")) do
+    local sNameParcel = DB.getValue(nodeParcel, "name", "");    
+    for _,nodeItem in pairs(DB.getChildren(nodeParcel, "itemlist")) do
+      local sNameItem = DB.getValue(nodeItem, "name", "");    
+      local sCost = DB.getValue(nodeItem, "cost", "");
+      if sCost ~= "" then
+        local sCoins,sCurrency = sCost:match("^(%d+) (%w+)");
+        if not sCurrency then
+Debug.console("manager_author_adnd","calculateTreasure","sNameParcel",sNameParcel);   
+Debug.console("manager_author_adnd","calculateTreasure","sNameItem",sNameItem);   
+Debug.console("manager_author_adnd","calculateTreasure","sCost",sCost);   
+        else
+          sCurrency = sCurrency:upper();
+          local nCurrency = tonumber(sCoins) or 0;
+          if aCoins[sCurrency] then
+            aCoins[sCurrency] = aCoins[sCurrency] + nCurrency;
+          else
+            aCoins[sCurrency] = nCurrency;
+          end
+        end
+      end
+    end
+  end
+  return aCoins;
 end

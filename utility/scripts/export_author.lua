@@ -68,6 +68,17 @@ function performClear()
 	tokens.closeAll();
 end
 
+--- Remove this function when 3.3.9 is turned up.
+function isFileNameValid(sFile)
+	if (sFile or "") == "" then
+		return false;
+	end
+	if sFile:match("[\\/<>|:?*%%]") then
+		return false;
+	end
+	return true;
+end
+
 function performExport()
   -- run custom pre-export functions if exist.
   AuthorManagerADND.OnExportEvent(list); 
@@ -100,7 +111,9 @@ function performExport()
 		file.setFocus(true);
 		return;
 	end
-	if not ExportManager.isFileNameValid(aProperties.file) then
+  -- uncomment this when 3.3.9 is live
+	--if not ExportManager.isFileNameValid(aProperties.file) then
+  if not isFileNameValid(aProperties.file) then
 		ChatManager.SystemMessage(Interface.getString("export_error_file_invalid"));
 		file.setFocus(true);
 		return;
