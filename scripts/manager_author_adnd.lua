@@ -789,13 +789,15 @@ function calculateEncounters()
   ChatManager.SystemMessage("AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
   Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
   sMessage = "";
-  for sName,nCount in pairs(calculateTreasureItems()) do
-    if sName ~= "" then
-      sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
+  if sRulesetName == "2E" then  
+    for sName,nCount in pairs(calculateTreasureItems()) do
+      if sName ~= "" then
+        sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
+      end
     end
+    ChatManager.SystemMessage("AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
+    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
   end
-  ChatManager.SystemMessage("AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
-  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
 end
 
 function calculateTreasureCoins()
@@ -818,24 +820,27 @@ end
 
 function calculateTreasureItems()
   local aCoins ={};
-  for _,nodeParcel in pairs(DB.getChildren("treasureparcels")) do
-    local sNameParcel = DB.getValue(nodeParcel, "name", "");    
-    for _,nodeItem in pairs(DB.getChildren(nodeParcel, "itemlist")) do
-      local sNameItem = DB.getValue(nodeItem, "name", "");    
-      local sCost = DB.getValue(nodeItem, "cost", "");
-      if sCost ~= "" then
-        local sCoins,sCurrency = sCost:match("^(%d+) (%w+)");
-        if not sCurrency then
+  local sRulesetName = User.getRulesetName();
+  if sRulesetName == "2E" then  
+    for _,nodeParcel in pairs(DB.getChildren("treasureparcels")) do
+      local sNameParcel = DB.getValue(nodeParcel, "name", "");    
+      for _,nodeItem in pairs(DB.getChildren(nodeParcel, "itemlist")) do
+        local sNameItem = DB.getValue(nodeItem, "name", "");    
+        local sCost = DB.getValue(nodeItem, "cost", "");
+        if sCost ~= "" then
+          local sCoins,sCurrency = sCost:match("^(%d+) (%w+)");
+          if not sCurrency then
 Debug.console("manager_author_adnd","calculateTreasure","sNameParcel",sNameParcel);   
 Debug.console("manager_author_adnd","calculateTreasure","sNameItem",sNameItem);   
 Debug.console("manager_author_adnd","calculateTreasure","sCost",sCost);   
-        else
-          sCurrency = sCurrency:upper();
-          local nCurrency = tonumber(sCoins) or 0;
-          if aCoins[sCurrency] then
-            aCoins[sCurrency] = aCoins[sCurrency] + nCurrency;
           else
-            aCoins[sCurrency] = nCurrency;
+            sCurrency = sCurrency:upper();
+            local nCurrency = tonumber(sCoins) or 0;
+            if aCoins[sCurrency] then
+              aCoins[sCurrency] = aCoins[sCurrency] + nCurrency;
+            else
+              aCoins[sCurrency] = nCurrency;
+            end
           end
         end
       end
