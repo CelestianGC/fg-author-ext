@@ -10,17 +10,15 @@ function onInit()
     
     updateRecordTypeInfo();
     
-    -- to lock/unlock records
-    Comm.registerSlashHandler("lockrecords", processRecordLock);
-    Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
+    Comm.registerSlashHandler("author", processAuthorCommand);
+    -- -- to lock/unlock records
+    -- Comm.registerSlashHandler("lockrecords", processRecordLock);
+    -- Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
+    -- --
+    -- Comm.registerSlashHandler("addtokens", addMissingTokens);
+    -- Comm.registerSlashHandler("addnpctokens", addMissingNPCTokens);
+    -- Comm.registerSlashHandler("addbattletokens", addMissingBattleTokens);
     --
-    Comm.registerSlashHandler("addtokens", addMissingTokens);
-    Comm.registerSlashHandler("addnpctokens", addMissingNPCTokens);
-    Comm.registerSlashHandler("addbattletokens", addMissingBattleTokens);
-    --
-    Comm.registerSlashHandler("encounterstats", calculateEncounters);
-    --
-    
     local sVersionRequired = "3.3.9";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
@@ -30,7 +28,6 @@ function onInit()
 
     bVersionOK = true; -- for now don't do checking just assume they know what they are doing and enable it
     if bVersionOK then
-      Comm.registerSlashHandler("author", authorRefmanual);
       ExportManager.registerExportNode({ name = "_refmanualindex", label = "Reference Manual", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
       --ExportManager.registerExportNode({ name = "_hiddenstory", label = "Hidden Story", export="reference.refmanualindex", sLibraryEntry="reference_manual"});
       --ExportManager.registerExportNode({ name = "hiddenstory", label = "Hidden Story", export="hiddenstory", exportref="reference.hiddendata", sLibraryEntry="reference_list"});
@@ -49,6 +46,40 @@ function onInit()
       -- CoreRPG_Version_Miss_Match_For_AUTHOR.causeAlert = nVersion;
     end
   end
+end
+
+function processAuthorCommand(sCommand, sParams)
+--  Debug.console("manager_author_adnd.lua","processAuthorCommand","sParams",sParams);
+  local sCmd, sCmdParameter = sParams:match("^([%w]+) (.+)");
+  if not sCmd then
+    sCmd = sParams;
+  end
+  if sCmd == "stats" then
+    calculateEncounters();
+  elseif sCmd == "lock" then
+    processRecordLock("lock",sCmdParameter);
+  elseif sCmd == "unlock" then
+    processRecordUnLock("unlock",sCmdParameter);
+  elseif sCmd == "addtokens" then
+    addMissingTokens("addtokens",sCmdParameter);
+  elseif sCmd == "addnpctokens" then
+    addnpctokens("addnpctokens",sCmdParameter);
+  elseif sCmd == "addbattletokens" then
+    addMissingBattleTokens("addbattletokens",sCmdParameter);
+  else
+    showCommandHelp();
+  end
+end
+
+function showCommandHelp()
+  ChatManager.SystemMessage("AUTHOR HELP\n\r" 
+                         .. "/author unlock [all|name] - unlocks object records.\r\n"
+                         .. "/author lock [all|name] - locks object records.\r\n"
+                         .. "/author addtokens (force-set) - Adds Letter tokens to NPCs & Battles missing tokens.\r\n"
+                         .. "/author addnpctokens (force-set) - Adds Letter tokens to NPCs missing tokens.\r\n"
+                         .. "/author addbattletokens (force-set) - Adds Letter tokens to Battles missing tokens.\r\n"
+                         .. "/author stats - Display simple encounter stats.\r\n"
+                         .. "");
 end
 
 -- add in the button_story_bulkstubs
@@ -73,11 +104,6 @@ function OnExportEvent(list)
         fCustomProcess(list);
     end
 	end
-end
-
--- slash command /author /export
-function authorRefmanual(sCommand, sParams)
-  Interface.openWindow("export", "export");
 end
 
 -- build a list of all the available frame defs we can use from the referenceblock* type.
@@ -774,11 +800,11 @@ function calculateEncounters()
   end
   local sRulesetName = User.getRulesetName();
   if sRulesetName == "2E" then
-    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP);  
-    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP);  
+    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP .."\r\n");  
+    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP .."\r\n");  
   else
-    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."");  
-    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."");  
+    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."\r\n");  
+    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."\r\n");  
   end
   local sMessage = "";
   for sName,nCount in pairs(calculateTreasureCoins()) do
@@ -789,15 +815,13 @@ function calculateEncounters()
   ChatManager.SystemMessage("AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
   Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
   sMessage = "";
-  if sRulesetName == "2E" then  
-    for sName,nCount in pairs(calculateTreasureItems()) do
-      if sName ~= "" then
-        sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
-      end
+  for sName,nCount in pairs(calculateTreasureItems()) do
+    if sName ~= "" then
+      sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
     end
-    ChatManager.SystemMessage("AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
-    Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
   end
+  ChatManager.SystemMessage("AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
+  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
 end
 
 function calculateTreasureCoins()
@@ -821,26 +845,24 @@ end
 function calculateTreasureItems()
   local aCoins ={};
   local sRulesetName = User.getRulesetName();
-  if sRulesetName == "2E" then  
-    for _,nodeParcel in pairs(DB.getChildren("treasureparcels")) do
-      local sNameParcel = DB.getValue(nodeParcel, "name", "");    
-      for _,nodeItem in pairs(DB.getChildren(nodeParcel, "itemlist")) do
-        local sNameItem = DB.getValue(nodeItem, "name", "");    
-        local sCost = DB.getValue(nodeItem, "cost", "");
-        if sCost ~= "" then
-          local sCoins,sCurrency = sCost:match("^(%d+) (%w+)");
-          if not sCurrency then
+  for _,nodeParcel in pairs(DB.getChildren("treasureparcels")) do
+    local sNameParcel = DB.getValue(nodeParcel, "name", "");    
+    for _,nodeItem in pairs(DB.getChildren(nodeParcel, "itemlist")) do
+      local sNameItem = DB.getValue(nodeItem, "name", "");    
+      local sCost = DB.getValue(nodeItem, "cost", "");
+      if sCost ~= "" then
+        local sCoins,sCurrency = sCost:match("(%d+) (%w+)");
+        if not sCurrency then
 Debug.console("manager_author_adnd","calculateTreasure","sNameParcel",sNameParcel);   
 Debug.console("manager_author_adnd","calculateTreasure","sNameItem",sNameItem);   
 Debug.console("manager_author_adnd","calculateTreasure","sCost",sCost);   
+        else
+          sCurrency = sCurrency:upper();
+          local nCurrency = tonumber(sCoins) or 0;
+          if aCoins[sCurrency] then
+            aCoins[sCurrency] = aCoins[sCurrency] + nCurrency;
           else
-            sCurrency = sCurrency:upper();
-            local nCurrency = tonumber(sCoins) or 0;
-            if aCoins[sCurrency] then
-              aCoins[sCurrency] = aCoins[sCurrency] + nCurrency;
-            else
-              aCoins[sCurrency] = nCurrency;
-            end
+            aCoins[sCurrency] = nCurrency;
           end
         end
       end
