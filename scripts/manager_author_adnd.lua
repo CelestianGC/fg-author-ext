@@ -11,14 +11,6 @@ function onInit()
     updateRecordTypeInfo();
     
     Comm.registerSlashHandler("author", processAuthorCommand);
-    -- -- to lock/unlock records
-    -- Comm.registerSlashHandler("lockrecords", processRecordLock);
-    -- Comm.registerSlashHandler("unlockrecords", processRecordUnLock);
-    -- --
-    -- Comm.registerSlashHandler("addtokens", addMissingTokens);
-    -- Comm.registerSlashHandler("addnpctokens", addMissingNPCTokens);
-    -- Comm.registerSlashHandler("addbattletokens", addMissingBattleTokens);
-    --
     local sVersionRequired = "3.3.9";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
@@ -246,7 +238,9 @@ function performRefIndexBuild(list)
           end
           local sNoteText = DB.getValue(nodeStory,"text","");
           -- we check > 8 because FG puts "SPACE<p></p>" in every story
-          if (bSubchapter and sNoteText:len() > 8) or (not bSubchapter) then
+          --if (bSubchapter and sNoteText:len() > 8) or (not bSubchapter) then
+          if (bSubchapter and not sNoteText:match("^[\r\n]+<p></p>$")) or (not bSubchapter) then
+          
             -- create refpages node and current node to work on and set name/links
             local dRefPages = DB.createChild(nodeSubChapterSub,"refpages");
             local sCleanEntry = sNodeName;
@@ -349,6 +343,7 @@ function createBlockText(dBlocks,sText,sFrame)
     DB.setValue(nodeBlock,"text","formattedtext",sText);
   end
 end
+
 -- create a block for an inline image
 function createBlockImage(dBlocks,sText,sFrame)
 --Debug.console("manager_author_adnd.lua","createBlockImage","sFrame",sFrame);
@@ -360,6 +355,10 @@ function createBlockImage(dBlocks,sText,sFrame)
 -- </linklist>
   local sImageNode = sText:match("recordname=\"([%w%p%-]+)\"");
   local sImageCaption = sText:match("<link class=\"imagewindow\" recordname=\"[%w%p%-]+\">([%w%p%s]+)</link>");
+  
+  -- prototyping code that I might use later...
+  -- sImageNode, sImageCaption imageBlockRecord(sText);
+  
 --Debug.console("manager_author_adnd.lua","createBlockImage","sImageCaption",sImageCaption);  
   local nodeImage = DB.findNode(sImageNode);
   if (nodeImage) then
@@ -408,6 +407,14 @@ function createBlockImage(dBlocks,sText,sFrame)
     DB.setValue(nodeBlock,"imagelink","windowreference","imagewindow",sImageNode);
   end
 end
+
+-- prototyping code that I might use later...
+-- <link class="imagewindow" recordname="image.id-00003">Map7#100x100#</link>
+function imageBlockRecord(sText)
+  local sImageNode, sImageCaption = sText:match('<link class="imagewindow" recordname="(.-)">(.-)</link>');
+  return sImageNode, sImageCaption;
+end
+
 
 -- this will make sure the image is no bigger than 500x500 and try to keep
 -- the scale/size portions correct

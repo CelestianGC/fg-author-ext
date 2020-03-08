@@ -11,4 +11,31 @@
     <script file="utility/scripts/export_author.lua" merge="replace"/>
   </windowclass>
 
-</root>
+<!--   <windowclass name="export_categoryentry" merge="join">
+    <sheetdata>
+			<windowlist name="entries" merge="replace">
+				<bounds>0,20,-1,-1</bounds>
+        <datasource>entrylist</datasource>
+				<class>export_entry</class>
+				<skipempty />
+				<sortby><control>name</control></sortby>
+			</windowlist>    
+    </sheetdata>
+  </windowclass>
+  
+- 	<template name="list_export_records">
+		<windowlist>
+			<anchored to="contentanchor">
+				<top anchor="bottom" relation="relative" offset="60" />
+				<left offset="5" />
+				<right offset="-15" />
+				<bottom parent="" offset="-190" />
+			</anchored>
+			<frame name="groupbox" offset="15,50,25,30" />
+			<class>export_categoryentry</class>
+			<sortby><control>label</control></sortby>
+			<skipempty />
+			<script file="utility/scripts/export_list.lua" />
+		</windowlist>
+	</template> -->
+ </root>
