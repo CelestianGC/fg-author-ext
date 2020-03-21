@@ -716,19 +716,28 @@ end
 
 -- add missing tokens to npcs and battle/encounters
 function addMissingTokens(sCommand, sParams)
-  local bForceSet = (sParams:lower() == "force-set");
+  local bForceSet = false;
+  if sParams then
+    bForceSet = (sParams:lower() == "force-set");
+  end
 Debug.console("manager_author_adnd.lua","addMissingTokens","Is ForceSet?",bForceSet);     
   addTokensIfMissing(bForceSet);
   addTokensIfMissingFromEncounters(bForceSet);
 end
 -- add missing tokens to npcs 
 function addMissingNPCTokens(sCommand, sParams)
-  local bForceSet = (sParams:lower() == "force-set");
+  local bForceSet = false;
+  if sParams then
+    bForceSet = (sParams:lower() == "force-set");
+  end
   addTokensIfMissing(bForceSet)
 end
 -- add missing tokens to battle/encounters
 function addMissingBattleTokens(sCommand, sParams)
-  local bForceSet = (sParams:lower() == "force-set");
+  local bForceSet = false;
+  if sParams then
+    bForceSet = (sParams:lower() == "force-set");
+  end
   addTokensIfMissingFromEncounters(bForceSet)
 end
 
