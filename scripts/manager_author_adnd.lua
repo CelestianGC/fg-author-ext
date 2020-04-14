@@ -805,6 +805,8 @@ function calculateEncounters()
   local nTotalCR = 0;
   local fAverageCR = 0;
   local nTotalEncounters = 0;
+  local nTotalNPCs = DB.getChildCount("npc");
+  
   for _,nodeEnc in pairs(DB.getChildren("battle")) do
     nTotalEncounters = nTotalEncounters + 1;
     nTotalEXP = nTotalEXP + DB.getValue(nodeEnc,"exp",0);
@@ -836,6 +838,10 @@ function calculateEncounters()
       sMessage = sMessage .. sName .. " : " .. nCount .. "\r\n";
     end
   end
+  
+  ChatManager.SystemMessage("AUTHOR: NPC Total: " .. nTotalNPCs .. "\r\n");
+  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: NPC Total:" .. nTotalNPCs .. "\r\n");
+
   ChatManager.SystemMessage("AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
   Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
 end
