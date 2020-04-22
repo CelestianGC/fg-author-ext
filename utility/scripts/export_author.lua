@@ -32,7 +32,7 @@ function addExportNode(nodeSource, sTargetPath, sExportType, sExportLabel, sExpo
 	if not aNodes[sLibraryNode] then
 		local aLibraryIndex = {};
 		aLibraryIndex.createstring = { name = aProperties.namecompact, categoryname = aProperties.category };
-		aLibraryIndex.static = true;
+    aLibraryIndex.static = true;
 		aNodes[sLibraryNode] = aLibraryIndex;
 	end
 
@@ -48,7 +48,7 @@ function addExportNode(nodeSource, sTargetPath, sExportType, sExportLabel, sExpo
 		else
 			local aLibraryEntry = {};
 			aLibraryEntry.createstring = { name = sExportLabel };
-			aLibraryEntry.createlink = { librarylink = { class = sExportListClass, recordname = sExportRootPath } };
+      aLibraryEntry.createlink = { librarylink = { class = sExportListClass, recordname = sExportRootPath } };
 			
 			aNodes[sLibraryEntry] = aLibraryEntry;
 		end
@@ -121,9 +121,10 @@ function performExport()
 	
 	-- Loop through categories
 	for _, cw in ipairs(list.getWindows()) do
+    local bExcludeReadOnly = (cw.neverreadonly.getValue()==1);
     local aExportSources = cw.getSources();
 		local aExportTargets;
-		if aProperties.readonly then
+		if aProperties.readonly and not bExcludeReadOnly then
 			aExportTargets = cw.getRefTargets();
 		else
 			aExportTargets = cw.getTargets();
@@ -147,15 +148,16 @@ function performExport()
                   sLibraryEntry = rExport.sLibraryEntry;
                 end
                 --- that allows you to create a library class of reference_manual
---Debug.console("export_author.lua","performExport","vSource",vSource);                
---Debug.console("export_author.lua","performExport","cw",cw);      
+-- Debug.console("export_author.lua","performExport","vSource",vSource);                
+-- Debug.console("export_author.lua","performExport","cw",cw);      
 -- Debug.console("export_author.lua","performExport","nodeChild",nodeChild);                
 -- Debug.console("export_author.lua","performExport","sTargetPath",sTargetPath);            
 -- Debug.console("export_author.lua","performExport","cw.getExportType()",cw.getExportType());                
 -- Debug.console("export_author.lua","performExport","cw.label.getValue()",cw.label.getValue());                
 -- Debug.console("export_author.lua","performExport","sLibraryEntry",sLibraryEntry);                
 -- Debug.console("export_author.lua","performExport","aExportTargets[1]",aExportTargets[1]);     
---Debug.console("export_author.lua","performExport","aNodes[sTargetPath]",aNodes[sTargetPath]);   
+-- Debug.console("export_author.lua","performExport","aNodes[sTargetPath]",aNodes[sTargetPath]);   
+-- Debug.console("export_author.lua","performExport","Exclude RO",cw.neverreadonly.getValue()==1);   
                 addExportNode(nodeChild, sTargetPath, cw.getExportType(), cw.label.getValue(), sLibraryEntry, aExportTargets[1]);
 							end
 						end
@@ -166,7 +168,7 @@ function performExport()
 				for _, ew in ipairs(cw.entries.getWindows()) do
 					local node = ew.getDatabaseNode();
 					local sTargetPath = node.getNodeName();
---Debug.console("export_author.lua","performExport","ew sTargetPath",sTargetPath);    
+Debug.console("export_author.lua","performExport","---------------->sTargetPath",sTargetPath);    
 					for kSource,vSource in ipairs(aExportSources) do
 						if sTargetPath:match("^" .. vSource) then
 							sTargetPath = sTargetPath:gsub("^" .. vSource, aExportTargets[kSource]);

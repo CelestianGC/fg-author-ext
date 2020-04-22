@@ -9,33 +9,24 @@
   <!-- use my export.lua file -->
   <windowclass name="export" merge="join">
     <script file="utility/scripts/export_author.lua" merge="replace"/>
-  </windowclass>
-
-<!--   <windowclass name="export_categoryentry" merge="join">
     <sheetdata>
-			<windowlist name="entries" merge="replace">
-				<bounds>0,20,-1,-1</bounds>
-        <datasource>entrylist</datasource>
-				<class>export_entry</class>
-				<skipempty />
-				<sortby><control>name</control></sortby>
-			</windowlist>    
+			<stringcontrol name="label_excludecheck">
+				<anchored to="list" position="aboveright" offset="15,3" />
+				<font>sheetlabel</font>
+				<lineoffset default="on">-1</lineoffset>
+				<static textres="AUTHOR_export_label_exclude_ro" />
+        <tooltip textres="AUTHOR_export_exclude_ro_tooltip" />
+			</stringcontrol>
+      
     </sheetdata>
   </windowclass>
   
-- 	<template name="list_export_records">
-		<windowlist>
-			<anchored to="contentanchor">
-				<top anchor="bottom" relation="relative" offset="60" />
-				<left offset="5" />
-				<right offset="-15" />
-				<bottom parent="" offset="-190" />
-			</anchored>
-			<frame name="groupbox" offset="15,50,25,30" />
-			<class>export_categoryentry</class>
-			<sortby><control>label</control></sortby>
-			<skipempty />
-			<script file="utility/scripts/export_list.lua" />
-		</windowlist>
-	</template> -->
+  <windowclass name="export_categoryentry" merge="join">
+    <sheetdata>
+			<button_checkbox name="neverreadonly">
+        <anchored to="label" position="righthigh" offset="-20" width="20" height="20" />
+			</button_checkbox>      
+      
+    </sheetdata>
+  </windowclass>
  </root>

@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>CoreRPG - Author</name>
-		<version>5.03</version>
+		<version>5.05</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>Write story entries and then author them into a Ref-Manual.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 5.03.\rby Celestian, 2017-2019\r---\r/author help for options.\r---" font="emotefont"/>
+	<announcement text="Author - CoreRPG version 5.05.\rby Celestian, 2017-2019\r---\r/author help for options." font="emotefont" icon="celestian" />
 
 	<base>		
     <!-- Author requirements -->
@@ -29,11 +29,13 @@
     <string name="AUTHOR_Label_FrameSelect_Forward">Next Frame</string>
     <string name="AUTHOR_Label_FrameSelect_Back">Previous Frame</string>    
     <string name="AUTHOR_Label_FrameGlobalDefault">When exporting, set this frame as the default for all Stories without a frame set.</string> 
+    <string name="AUTHOR_export_label_exclude_ro">Exclude Read Only</string>    
+    <string name="AUTHOR_export_exclude_ro_tooltip">Exclude individual record types from the ready only export setting (if used).</string>    
     
     <string name="story_bulk_stubs_tooltip">Bulk create chapters(groups) and story stubs.</string>
     <icon name="button_bulk_add" file="graphics/buttons/button_statpointmode.png" />
     <icon name="button_bulk_add_down" file="graphics/buttons/button_statpointmode_down.png" />
-    
+    <icon name="celestian" file="graphics/icons/celestian.png" />
   </base>
     
 </root>

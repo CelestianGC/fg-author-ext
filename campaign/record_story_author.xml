@@ -162,21 +162,29 @@
   </windowclass>
   
   <!--  insert the author header into the story record at top -->
-  <windowclass name="encounter" merge="merge">
+  <windowclass name="encounter" merge="join">
 		<sheetdata>
-			<note_author_header name="author_header" insertbefore="header">
-				<class>encounter_author_header</class>
-			</note_author_header>
-			<sub_note_header name="header">
-        <!-- we attach to author_header instead of top of window -->
-        <anchored>
-          <top parent="author_header" anchor="bottom" offset="5" />
-          <left offset="15" />
-          <right offset="-15" />
-        </anchored>
-				<class>encounter_header</class>
-			</sub_note_header>
-      
+    <!-- insert custom sub-header with options -->
+		<subwindow name="author_header" insertbefore="contentframe"> 
+			<anchored>
+				<top parent="header" anchor="bottom" relation="relative" offset="1" />
+				<left parent="" offset="15" />
+				<right parent="" offset="-15" />
+			</anchored>
+			<activate />
+			<fastinit />
+      <class>encounter_author_header</class>
+		</subwindow>      
+    <!-- move this down so text is attached to it below header -->
+		<genericcontrol name="contentframe" mergerule="replace">
+			<anchored>
+				<top parent="header" anchor="bottom" relation="relative" offset="5" />
+				<left offset="25" />
+				<right offset="-25" />
+				<bottom offset="-40" />
+			</anchored>
+			<disabled />
+		</genericcontrol>    
     </sheetdata>
   </windowclass> 
   
@@ -219,7 +227,7 @@
     </note_author_header>
   </sheetdata>
   </windowclass>
-  
+
   <!-- template for the bulk chapter/story stub creations aGMEditButtons -->
   <template name="button_story_bulkstubs">
     <buttoncontrol insertbefore="filter_sharedonly">
