@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Author - CoreRPG version 5.05.\rby Celestian, 2017-2019\r---\r/author help for options." font="emotefont" icon="celestian" />
+	<announcement text="Author - CoreRPG version 5.05.\rby Celestian, 2017-2020\r---\r/author help for options." font="emotefont" icon="celestian" />
 
 	<base>		
     <!-- Author requirements -->
