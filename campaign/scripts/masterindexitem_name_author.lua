@@ -71,12 +71,39 @@ function onDragStart(button, x, y, draginfo)
 	draginfo.setIcon("button_link");
 	local sClass, sRecord = window.link.getValue();
 	draginfo.setShortcutData(sClass, sRecord);
+Debug.console("masterindexitem_name.lua","onDragStart","sClass",sClass);  
   if LibraryData.getRecordTypeFromPath(sClass) ~= "" then
     draginfo.setDescription(StringManager.capitalize(LibraryData.getRecordTypeFromPath(sClass)) .. ": " .. getValue());
   elseif LibraryData.getDisplayText(sClass) ~= "" then
     draginfo.setDescription(LibraryData.getDisplayText(sClass) .. ": " .. getValue());
+  elseif getRecordTypeFromDisplayClass(sClass) ~= "" then
+    draginfo.setDescription(StringManager.capitalize(getRecordTypeFromDisplayClass(sClass)) .. ": " .. getValue());
+  elseif getRecordTypeFromDataMap(sClass) ~= "" then
+    draginfo.setDescription(StringManager.capitalize(getRecordTypeFromDataMap(sClass)) .. ": " .. getValue());
   else
     draginfo.setDescription(getValue());
   end
 	return true;
+end
+
+-- various utility functions to get readable/useful tags for dragged links.
+function getRecordTypeFromDisplayClass(sDisplayClass)
+  for kRecordType,vRecord in pairs(LibraryData.aRecords) do
+    if vRecord.sRecordDisplayClass and vRecord.sRecordDisplayClass == sDisplayClass then
+      return kRecordType;
+    end
+  end
+  return "";
+end
+function getRecordTypeFromDataMap(sDataMap)
+	for kRecordType,vRecord in pairs(aRecords) do
+		if vRecord.aDataMap then
+      for i=1,#vRecord.aDataMap do 
+        if vRecord.aDataMap[i] == sDataMap then
+          return kRecordType;
+        end
+      end
+		end
+	end
+	return "";
 end
