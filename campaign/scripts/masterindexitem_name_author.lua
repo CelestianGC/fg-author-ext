@@ -71,10 +71,10 @@ function onDragStart(button, x, y, draginfo)
 	draginfo.setIcon("button_link");
 	local sClass, sRecord = window.link.getValue();
 	draginfo.setShortcutData(sClass, sRecord);
-  if LibraryData.getDisplayText(sClass) ~= "" then
-    draginfo.setDescription(LibraryData.getDisplayText(sClass) .. ": " .. getValue());
-  elseif LibraryData.getRecordTypeFromPath(sClass) ~= "" then
+  if LibraryData.getRecordTypeFromPath(sClass) ~= "" then
     draginfo.setDescription(StringManager.capitalize(LibraryData.getRecordTypeFromPath(sClass)) .. ": " .. getValue());
+  elseif LibraryData.getDisplayText(sClass) ~= "" then
+    draginfo.setDescription(LibraryData.getDisplayText(sClass) .. ": " .. getValue());
   else
     draginfo.setDescription(getValue());
   end
