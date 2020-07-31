@@ -55,7 +55,7 @@ function processAuthorCommand(sCommand, sParams)
   elseif sCmd == "addtokens" then
     addMissingTokens("addtokens",sCmdParameter);
   elseif sCmd == "addnpctokens" then
-    addnpctokens("addnpctokens",sCmdParameter);
+    addMissingNPCTokens("addnpctokens",sCmdParameter);
   elseif sCmd == "addbattletokens" then
     addMissingBattleTokens("addbattletokens",sCmdParameter);
   else
