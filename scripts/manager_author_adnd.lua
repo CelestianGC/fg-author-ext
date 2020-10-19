@@ -11,7 +11,7 @@ function onInit()
     updateRecordTypeInfo();
     
     Comm.registerSlashHandler("author", processAuthorCommand);
-    local sVersionRequired = "3.3.9";
+    local sVersionRequired = "3.3.11";
     local sMajor,sMinor,sPoint = Interface.getVersion();
     local sVersion = sMajor .. "." .. sMinor .. "." .. sPoint;
     local bVersionOK = (sVersion == sVersionRequired);
@@ -293,9 +293,16 @@ function createBlocks(nodeRefPage,nodeStory,sFrameText)
 -- <linklist>
   -- <link class="imagewindow" recordname="image.id-00003">Map7#100x100#</link>
 -- </linklist>
-    local nStart, nEnd = string.find(sNoteText,'<linklist>[^<]+<link class="imagewindow" recordname="[%w%-%p]+">[^<]+</link>[^<]+</linklist>',1);
--- Debug.console("manager_author_adnd.lua","createBlocks","nStart",nStart);      
--- Debug.console("manager_author_adnd.lua","createBlocks","nEnd",nEnd);
+
+-- <linklist>
+-- 	<link class="imagewindow" recordname="image.id-00002@AD&amp;D 2E Players Handbook">Door Smashed Open</link>
+-- </linklist>
+    --local nStart, nEnd = string.find(sNoteText,'<linklist>[^<]+<link class="imagewindow" recordname="[%w%-%p]+">[^<]+</link>[^<]+</linklist>',1);
+Debug.console("manager_author_adnd.lua","createBlocks","sNoteText",sNoteText);          
+ChatManager.SystemMessage("AUTHOR: [" .. sNoteText .. "]");  
+    local nStart, nEnd = string.find(sNoteText,'<linklist>[^<]+<link class="imagewindow" recordname="[^\"]+">[^<]+</link>[^<]+</linklist>',1);
+Debug.console("manager_author_adnd.lua","createBlocks","nStart",nStart);      
+Debug.console("manager_author_adnd.lua","createBlocks","nEnd",nEnd);
     if (nStart and nEnd) then
       local sThisBlock = string.sub(sNoteText,1,nStart-1);
       if validateStringForBlock(sThisBlock) then
@@ -346,16 +353,20 @@ end
 
 -- create a block for an inline image
 function createBlockImage(dBlocks,sText,sFrame)
---Debug.console("manager_author_adnd.lua","createBlockImage","sFrame",sFrame);
---Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
+Debug.console("manager_author_adnd.lua","createBlockImage","sFrame",sFrame);
+Debug.console("manager_author_adnd.lua","createBlockImage","sText",sText);
   local nodeBlock = DB.createChild(dBlocks);
 -- should we split this up by $ or \r and parse it that way for better match?
 -- <linklist>
   -- <link class="imagewindow" recordname="image.id-00001">Cavern1 room 2</link>
 -- </linklist>
-  local sImageNode = sText:match("recordname=\"([%w%p%-]+)\"");
-  local sImageCaption = sText:match("<link class=\"imagewindow\" recordname=\"[%w%p%-]+\">([%w%p%s]+)</link>");
+--   local sImageNode = sText:match("recordname=\"([%w%p%-]+)\"");
+  -- local sImageCaption = sText:match("<link class=\"imagewindow\" recordname=\"[%w%p%-]+\">([%w%p%s]+)</link>");
+  local sImageNode = sText:match("recordname=\"([^\"]+)\"");
+  local sImageCaption = sText:match("<link class=\"imagewindow\" recordname=\"[^\"]+\">([^<]+)</link>");
   
+  Debug.console("manager_author_adnd.lua","createBlockImage","sImageNode",sImageNode);
+  Debug.console("manager_author_adnd.lua","createBlockImage","sImageCaption",sImageCaption);
   -- prototyping code that I might use later...
   -- sImageNode, sImageCaption imageBlockRecord(sText);
   
@@ -804,6 +815,7 @@ function calculateEncounters()
   local nTotalEXP = 0;
   local nTotalCR = 0;
   local fAverageCR = 0;
+  local nTotalStory = DB.getChildCount("encounter");
   local nTotalEncounters = 0;
   local nTotalNPCs = DB.getChildCount("npc");
   local nTotalParcels = DB.getChildCount("treasureparcels");
@@ -819,10 +831,14 @@ function calculateEncounters()
   end
   local sRulesetName = User.getRulesetName();
   if sRulesetName == "2E" then
-    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP .."\r\n");  
+    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP .."\r\n" ..
+	"NPCs: " .. nTotalNPCs .. "\r\n" ..
+	"Story Entries: " .. nTotalStory .. "\r\n");  
     Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\EXP: " .. nTotalEXP .."\r\n");  
   else
-    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."\r\n");  
+    ChatManager.SystemMessage("AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."\r\n" ..
+	"NPCs: " .. nTotalNPCs .. "\r\n" ..
+	"Story Entries: " .. nTotalStory .. "\r\n");  
     Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Encounter Totals\r\nCount: " .. nTotalEncounters .. "\r\nEXP: " .. nTotalEXP.. "\r\nAverage CR: " .. string.format("%.2f",fAverageCR) .."\r\n");  
   end
   local sMessage = "";
@@ -832,7 +848,7 @@ function calculateEncounters()
     end
   end
   ChatManager.SystemMessage("AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
-  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Coin Totals\r\n" .. sMessage);
+  Debug.console("manager_author_adnd","calculateEncounters","Treasure Coin Totals\r\n" .. sMessage);
   sMessage = "";
   for sName,nCount in pairs(calculateTreasureItems()) do
     if sName ~= "" then
@@ -840,11 +856,8 @@ function calculateEncounters()
     end
   end
   
-  ChatManager.SystemMessage("AUTHOR: NPC Total: " .. nTotalNPCs .. "\r\n");
-  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: NPC Total:" .. nTotalNPCs .. "\r\n");
-
-  ChatManager.SystemMessage("AUTHOR: Total Parcels: " .. nTotalParcels .. ", Treasure Item Value Totals\r\n" .. sMessage);
-  Debug.console("manager_author_adnd","calculateEncounters","AUTHOR: Treasure Item Value Totals\r\n" .. sMessage);
+  ChatManager.SystemMessage("AUTHOR: Total Parcels: " .. nTotalParcels .. "\r\nItem Value Totals\r\n" .. sMessage);
+  Debug.console("manager_author_adnd","calculateEncounters","Totals\r\n" .. sMessage);
 end
 
 function calculateTreasureCoins()
